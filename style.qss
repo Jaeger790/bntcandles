@@ -1,0 +1,180 @@
+QWidget {
+    background: transparent;
+}
+
+QMainWindow {
+    background-image: url(:/witchy.jpg);
+
+    color: hsla(52, 100%, 95%, 1);
+}
+
+QDialog#AddCustomerWindow {
+    background-color: hsla(229, 19%, 22%, 1);
+    color:hsla(52, 100%, 95%, 1);
+}
+
+QDialog#AddOrderWindow{
+    background-color: hsla(229, 19%, 22%, 1);
+    color:hsla(52, 100%, 95%, 1);
+}
+
+QDialog#OrderDetailsWindow {
+    background-color: hsla(229, 19%, 22%, 1);
+    color:hsla(52, 100%, 95%, 1);
+}
+
+QDialog#AddOrderDetailWindow {
+    background-color: hsla(229, 19%, 22%, 1);
+    color:hsla(52, 100%, 95%, 1);
+}
+
+QDialog#AddExpenseDetailWindow{
+    background-color: hsla(229, 19%, 22%, 1);
+    color:hsla(52, 100%, 95%, 1);
+}
+
+QDialog#ExpenseDetailsWindow{
+    background-color: hsla(229, 19%, 22%, 1);
+}
+
+QDialog#ProductEditor{
+    background-color: hsla(229, 19%, 22%, 1);
+    color:hsla(52, 100%, 95%, 1);
+}
+
+QDialog#AddProductDetailsWindow{
+    background-color: hsla(229, 19%, 22%, 1);
+    color:hsla(52, 100%, 95%, 1);
+}
+
+QDialog#ProductDetailsWindow{
+    background-color: hsla(229, 19%, 22%, 1);
+    color:hsla(52, 100%, 95%, 1);
+}
+
+QDialog#AddExpense{
+    background-color: hsla(229, 19%, 22%, 1);
+}
+
+QPushButton {
+    background-color: hsla(319, 30%, 16%, .65);
+
+    color: hsla(52, 100%, 95%, 1);
+    border: 1px outset hsla(52, 100%, 95%, 1);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+QPushButton:hover {
+    background-color: hsla(221, 11%, 49%, 1);
+    border: 2px inset hsla(52, 100%, 95%, 1);
+}
+
+QPushButton:pressed {
+    background-color: hsla(221, 11%, 49%, 1);
+}
+
+QPushButton:focus{
+    background-color: hsla(319, 30%, 16%, 1);
+    color: hsla(52, 100%, 95%, 1);
+    border: 2px outset hsla(52, 100%, 95%, 1);
+}
+
+QTableView {
+    background-color: hsla(229, 19%, 22%, 0);
+    margin: 25%;
+    color: hsla(52, 100%, 95%, 1);
+    selection-background-color: hsla(319, 30%, 16%, 1);
+    selection-color:hsla(52, 100%, 95%, 1);
+    font-size: 13px; border-radius: 2px;
+}
+
+QTableView::item {
+    background: qlineargradient(x1:0, y1:0, x1:0, y1:.25, stop:0 hsla(229, 19%, 22%, .5), stop:1 hsla(221, 11%, 49%, .5));
+    color: hsla(52, 100%, 95%, 1);
+    padding: 2px;
+    border: 1px outset hsla(221, 11%, 49%, 1);
+    border-radius: 4%;
+}
+
+QTableView::item:selected{
+    background-color: hsla(221, 11%, 49%, 1);
+    color: hsla(52, 100%, 95%, 1);
+    border: 2px inset rgba(80,80,80, 1);
+}
+
+QHeaderView::section {
+    background-color: hsla(229, 19%, 22%, .75);
+    color:hsla(52, 100%, 95%, 1);
+    border: 1px solid transparent;
+    border-radius: 5%;
+    padding: 4px;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+QTableView QTableCornerButton::sectionP{
+    background-color: hsla(229, 19%, 22%, 0);
+}
+
+QDialog {
+    background-color: hsla(52, 100%, 95%, 1);
+    border: 1px solid #dcdcdc;
+}
+
+QLineEdit {
+    border: 1px solid #dcdcdc;
+    border-radius: 4px ;
+    padding: 5px;
+    background-color: hsla(319, 30%, 16%, 1);
+    color: hsla(52, 100%, 95%, 1);
+    font-size: 12px;
+}
+
+QLineEdit#AdddCustomerWindow {
+    border: 1px solid #dcdcdc;
+    border-radius: 4px ;
+    padding: 5px;
+    background-color: hsla(319, 30%, 16%, 1);
+    color: hsla(52, 100%, 95%, 1);
+    font-size: 12px;
+}
+
+QLineEdit:focus {
+    border: 1px solid hsla(319, 30%, 16%, 1);
+    border-radius: 10px;
+    background-color: hsla(221, 11%, 49%, 1);
+    color: hsla(52, 100%, 95%, 1);
+}
+
+QLabel{
+    font-size: 20px;
+    color: hsla(52, 100%, 95%, 1);
+}
+
+QDialogButtonBox QPushButton {
+    min-width: 80px;
+}
+
+QComboBox{
+    background-color: hsla(319, 30%, 16%, 1);
+    color: hsla(52, 100%, 95%, 1);
+}
+QComboBox:focus{
+    background-color: hsla(221, 11%, 49%, 1);
+    color: hsla(52, 100%, 95%, 1);
+}
+
+
+QComboBox::item:focus{
+   background-color: hsla(221, 11%, 49%, 1);
+}
+
+QMessageBox{
+    background-color: hsla(319, 30%, 16%, 1);
+}
+
+QDateEdit{
+  background-color:  hsla(319, 30%, 16%, 1);
+}

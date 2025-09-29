@@ -1,0 +1,99 @@
+cmake_minimum_required(VERSION 3.16)
+project(BNTCandles LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_PREFIX_PATH "C:/Qt/6.9.2/mingw_64" CACHE PATH "Qt6 Library Path")
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+find_package(Qt6 COMPONENTS Core Gui Sql Widgets REQUIRED)
+
+find_library(MYSQL_LIBRARY
+    NAMES libmysql mysqlclient
+    PATHS
+        "C:/Program Files/MySQL/MySQL Connector C 8.0/lib"
+        "C:/Program Files/MySQL/MySQL Connector C 6.1/lib"
+        "C:/Program Files/MySQL/MySQL Server 8.0/lib"
+)
+if(NOT MYSQL_LIBRARY)
+    message(FATAL_ERROR "MySQL Connector/C library (libmysql.lib) not found. Please install MySQL Connector/C or update the path.")
+endif()
+
+find_path(MYSQL_INCLUDE_DIR
+    NAMES mysql.h
+    PATHS
+        "C:/Program Files/MySQL/MySQL Connector C 8.0/include"
+        "C:/Program Files/MySQL/MySQL Connector C 6.1/include"
+        "C:/Program Files/MySQL/MySQL Server 8.0/include"
+)
+if(NOT MYSQL_INCLUDE_DIR)
+    message(FATAL_ERROR "MySQL Connector/C headers (mysql.h) not found. Please install MySQL Connector/C or update the path.")
+endif()
+
+set(SOURCES
+    main.cpp
+    mainwindow.cpp
+    expenseDetailsWindow.cpp
+    addExpenseDetailWindow.cpp
+    producteditor.cpp
+)
+
+set(HEADERS
+    mainwindow.h
+    expenseDetailsWindow.h
+    addExpenseDetailWindow.h
+    producteditor.h
+)
+
+set(FORMS
+    mainwindow.ui
+    expenseDetailsWindow.ui
+    addExpenseDetailWindow.ui
+    producteditor.ui
+)
+
+set(RESOURCES
+    resources.qrc
+)
+
+add_executable(BNTCandles ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES}
+    bnt_icon.jpg
+    addcustomer.h addcustomer.cpp addcustomer.ui
+    states
+    orderdetailswindow.h orderdetailswindow.cpp orderdetailswindow.ui
+    addorderdetailwindow.h addorderdetailwindow.cpp addorderdetailwindow.ui
+    producteditor.h producteditor.cpp producteditor.ui
+    productdetailswindow.h productdetailswindow.cpp productdetailswindow.ui
+    addproductdetailswindow.h addproductdetailswindow.cpp addproductdetailswindow.ui
+    addorderwindow.h addorderwindow.cpp addorderwindow.ui
+    reportspage.h reportspage.cpp reportspage.ui
+    taxRates.txt
+    addexpense.h addexpense.cpp addexpense.ui
+    CustomerModel.h
+    CustomerModel.cpp
+    db_cred.ini
+
+)
+
+target_link_libraries(BNTCandles PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Sql
+    Qt6::Widgets
+    ${MYSQL_LIBRARY}
+)
+
+target_include_directories(BNTCandles PRIVATE
+    ${MYSQL_INCLUDE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+# Debug UIC processing
+message(STATUS "UI files: ${FORMS}")

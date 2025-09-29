@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AddOrderDetailWindow</class>
+ <widget class="QDialog" name="AddOrderDetailWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Add Order Item</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="productLabel">
+       <property name="text">
+        <string>Product:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="productCombo"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="quantityLabel">
+       <property name="text">
+        <string>Quantity:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="quantityEdit"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="unitPriceLabel">
+       <property name="text">
+        <string>Unit Price:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="unitPriceEdit"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="taxRateLabel">
+       <property name="text">
+        <string>Tax Rate (%):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="taxRateEdit"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="subtotalLabel">
+       <property name="text">
+        <string>Subtotal:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="subtotalEdit"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="taxAmountLabel">
+       <property name="text">
+        <string>Tax Amount:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="taxAmountEdit"/>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="totalLabel">
+       <property name="text">
+        <string>Total:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="totalEdit"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>AddOrderDetailWindow</receiver>
+   <slot>accept()</slot>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>AddOrderDetailWindow</receiver>
+   <slot>reject()</slot>
+  </connection>
+ </connections>
+</ui>
