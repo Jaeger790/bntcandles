@@ -124,6 +124,8 @@ CMakeLists.txt.user*
 
 *vcxproj.*
 
+*.vscode
+
 
 
 # MinGW generated files
