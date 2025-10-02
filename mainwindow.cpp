@@ -413,7 +413,7 @@ void BNTcandles::deleteProduct() {
 
             // Check for Order_Items dependencies
             query.prepare("SELECT COUNT(*) FROM product_details pd "
-                          "JOIN Order_Items oi ON pd.detail_ID = oi.detail_ID "
+                          "JOIN order_items oi ON pd.detail_ID = oi.detail_ID "
                           "WHERE pd.product_ID = :productId");
             query.bindValue(":productId", productId);
             if (!query.exec()) {

@@ -15,6 +15,7 @@ public:
     ~ProductEditor();
 
 private slots:
+    void saveProductName();
     void addDetail();
     void editDetail();
     void deleteDetail();

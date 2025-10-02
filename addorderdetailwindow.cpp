@@ -18,6 +18,7 @@ AddOrderDetailWindow::AddOrderDetailWindow(const QSqlDatabase &db, QWidget *pare
     ui->taxRateEdit->setValidator(new QDoubleValidator(0.0, 100.0, 2, this));
     ui->subtotalEdit->setValidator(new QDoubleValidator(0.0, 999999.99, 2, this));
     ui->taxAmountEdit->setValidator(new QDoubleValidator(0.0, 999999.99, 2, this));
+
     ui->totalEdit->setValidator(new QDoubleValidator(0.0, 999999.99, 2, this));
 
     // Populate product combo

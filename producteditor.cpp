@@ -1,3 +1,4 @@
+// Updated producteditor.cpp
 #include "producteditor.h"
 #include "ui_producteditor.h"
 #include "addproductdetailswindow.h"
@@ -42,9 +43,26 @@ ProductEditor::ProductEditor(const QString &productId, const QSqlDatabase &db, Q
     connect(ui->editDetailButton, &QPushButton::clicked, this, &ProductEditor::editDetail);
     connect(ui->deleteDetailButton, &QPushButton::clicked, this, &ProductEditor::deleteDetail);
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &ProductEditor::saveChanges);
+    connect(ui->saveProductButton, &QPushButton::clicked, this, &ProductEditor::saveProductName);
 
-    // Load existing product name if editing
-    if (!isNewProduct) {
+    if (isNewProduct) {
+        // Disable detail management until product is saved
+        ui->addDetailButton->setEnabled(false);
+        ui->addDetailButton->setToolTip("Save the product name first");
+        ui->addDetailButton->setStyleSheet("background-color: #00000079; color: #000000089;");
+        ui->editDetailButton->setEnabled(false);
+        ui->editDetailButton->setStyleSheet("background-color: #00000079; color: #000000089;");
+        ui->editDetailButton->setToolTip("Save the product name first");
+        ui->deleteDetailButton->setEnabled(false);
+        ui->deleteDetailButton->setStyleSheet("background-color: #00000079; color: #000000089;");
+        ui->deleteDetailButton->setToolTip("Save the product name first");
+        ui->buttonBox->button(QDialogButtonBox::Save)->setEnabled(false);
+        ui->buttonBox->button(QDialogButtonBox::Save)->setStyleSheet("background-color: #00000079; color: #000000089;");
+        ui->buttonBox->button(QDialogButtonBox::Save)->setToolTip("Save the product name first");
+    } else {
+        // Hide save product button for existing products
+        ui->saveProductButton->hide();
+        // Load existing product name if editing
         QSqlQuery query(db);
         query.prepare("SELECT product_name FROM product WHERE product_ID = :id");
         query.bindValue(":id", productId);
@@ -61,7 +79,7 @@ ProductEditor::~ProductEditor() {
     delete ui;
 }
 
-void ProductEditor::saveChanges() {
+void ProductEditor::saveProductName() {
     QString name = ui->productNameEdit->text().trimmed();
     if (name.isEmpty()) {
         QMessageBox::warning(this, "Input Error", "Product name cannot be empty.");
@@ -69,25 +87,50 @@ void ProductEditor::saveChanges() {
     }
 
     QSqlQuery query(db);
-    if (isNewProduct) {
-        // Insert new product
-        query.prepare("INSERT INTO product (product_name, total_stock) VALUES (:name, 0)");
-        query.bindValue(":name", name);
-        if (!query.exec()) {
-            QMessageBox::warning(this, "Database Error", "Failed to add product: " + query.lastError().text());
-            return;
-        }
-        productId = query.lastInsertId().toString();  // Now we have ID for details
-        detailsModel->setFilter(QString("product_ID = '%1'").arg(productId));  // Apply filter for new details
-    } else {
-        // Update existing
-        query.prepare("UPDATE product SET product_name = :name WHERE product_ID = :id");
-        query.bindValue(":name", name);
-        query.bindValue(":id", productId);
-        if (!query.exec()) {
-            QMessageBox::warning(this, "Database Error", "Failed to update product: " + query.lastError().text());
-            return;
-        }
+    query.prepare("INSERT INTO product (product_name, stock_qty) VALUES (:name, 0)");
+    query.bindValue(":name", name);
+    if (!query.exec()) {
+        QMessageBox::warning(this, "Database Error", "Failed to add product: " + query.lastError().text());
+        return;
+    }
+    productId = query.lastInsertId().toString();
+
+    // Apply filter for new details
+    detailsModel->setFilter(QString("product_ID = '%1'").arg(productId));
+    detailsModel->select();
+
+    // Enable detail buttons and main Save
+    ui->addDetailButton->setEnabled(true);
+    ui->editDetailButton->setEnabled(true);
+    ui->deleteDetailButton->setEnabled(true);
+    ui->buttonBox->button(QDialogButtonBox::Save)->setEnabled(true);
+
+    // Disable the Save Product button after use
+    ui->saveProductButton->setEnabled(false);
+
+    QMessageBox::information(this, "Success", "Product saved successfully. You can now add details.");
+}
+
+void ProductEditor::saveChanges() {
+    if (productId.isEmpty()) {
+        QMessageBox::warning(this, "Error", "Please save the product name first.");
+        return;
+    }
+
+    QString name = ui->productNameEdit->text().trimmed();
+    if (name.isEmpty()) {
+        QMessageBox::warning(this, "Input Error", "Product name cannot be empty.");
+        return;
+    }
+
+    QSqlQuery query(db);
+    // Always update the product name (works for both new and existing)
+    query.prepare("UPDATE product SET product_name = :name WHERE product_ID = :id");
+    query.bindValue(":name", name);
+    query.bindValue(":id", productId);
+    if (!query.exec()) {
+        QMessageBox::warning(this, "Database Error", "Failed to update product: " + query.lastError().text());
+        return;
     }
 
     // Submit details changes
@@ -96,7 +139,7 @@ void ProductEditor::saveChanges() {
         return;
     }
 
-    // Update total_stock (if not using DB trigger)
+    // Update stock_qty (if not using DB trigger)
     // updateTotalStock();
 
     accept();  // Close dialog
@@ -104,10 +147,10 @@ void ProductEditor::saveChanges() {
 
 void ProductEditor::updateTotalStock() {
     QSqlQuery query(db);
-    query.prepare("UPDATE product SET total_stock = (SELECT IFNULL(SUM(stock_qty), 0) FROM product_details WHERE product_ID = :id) WHERE product_ID = :id");
+    query.prepare("UPDATE product SET stock_qty = (SELECT IFNULL(SUM(stock_qty), 0) FROM product_details WHERE product_ID = :id) WHERE product_ID = :id");
     query.bindValue(":id", productId);
     if (!query.exec()) {
-        qDebug() << "Failed to update total_stock:" << query.lastError().text();
+        qDebug() << "Failed to update stock_qty:" << query.lastError().text();
     }
 }
 
