@@ -40,6 +40,7 @@ set(SOURCES
     expenseDetailsWindow.cpp
     addExpenseDetailWindow.cpp
     producteditor.cpp
+    ordereditor.cpp
 )
 
 set(HEADERS
@@ -47,6 +48,7 @@ set(HEADERS
     expenseDetailsWindow.h
     addExpenseDetailWindow.h
     producteditor.h
+    ordereditor.h
 )
 
 set(FORMS
@@ -54,6 +56,7 @@ set(FORMS
     expenseDetailsWindow.ui
     addExpenseDetailWindow.ui
     producteditor.ui
+    ordereditor.ui
 )
 
 set(RESOURCES
@@ -65,11 +68,11 @@ add_executable(BNTCandles ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES}
     addcustomer.h addcustomer.cpp addcustomer.ui
     states
     orderdetailswindow.h orderdetailswindow.cpp orderdetailswindow.ui
-    addorderdetailwindow.h addorderdetailwindow.cpp addorderdetailwindow.ui
+    addorderdetailwindow.h addorderdetailwindow.cpp addorderdetailwindow.ui 
     producteditor.h producteditor.cpp producteditor.ui
+    ordereditor.ui ordereditor.cpp ordereditor.h
     productdetailswindow.h productdetailswindow.cpp productdetailswindow.ui
     addproductdetailswindow.h addproductdetailswindow.cpp addproductdetailswindow.ui
-    addorderwindow.h addorderwindow.cpp addorderwindow.ui
     reportspage.h reportspage.cpp reportspage.ui
     taxRates.txt
     addexpense.h addexpense.cpp addexpense.ui

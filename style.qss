@@ -42,6 +42,11 @@ QDialog#ProductEditor{
     color:hsla(52, 100%, 95%, 1);
 }
 
+QDialog#OrderEditor{
+    background-color: hsla(229, 19%, 22%, 1);
+    color:hsla(52, 100%, 95%, 1);
+}
+
 QDialog#AddProductDetailsWindow{
     background-color: hsla(229, 19%, 22%, 1);
     color:hsla(52, 100%, 95%, 1);

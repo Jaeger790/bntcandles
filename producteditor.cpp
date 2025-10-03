@@ -1,4 +1,3 @@
-// Updated producteditor.cpp
 #include "producteditor.h"
 #include "ui_producteditor.h"
 #include "addproductdetailswindow.h"
@@ -101,14 +100,16 @@ void ProductEditor::saveProductName() {
 
     // Enable detail buttons and main Save
     ui->addDetailButton->setEnabled(true);
+    ui->addDetailButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65) ; color:hsla(52, 100%, 95%, 1);");
     ui->editDetailButton->setEnabled(true);
+    ui->editDetailButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65) ; color:hsla(52, 100%, 95%, 1);");
     ui->deleteDetailButton->setEnabled(true);
+    ui->deleteDetailButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65) ; color:hsla(52, 100%, 95%, 1);");
     ui->buttonBox->button(QDialogButtonBox::Save)->setEnabled(true);
+    ui->buttonBox->button(QDialogButtonBox::Save)->setStyleSheet("background-color:hsla(319, 30%, 16%, .65) ; color:hsla(52, 100%, 95%, 1);");
 
     // Disable the Save Product button after use
     ui->saveProductButton->setEnabled(false);
-
-    QMessageBox::information(this, "Success", "Product saved successfully. You can now add details.");
 }
 
 void ProductEditor::saveChanges() {
@@ -142,9 +143,11 @@ void ProductEditor::saveChanges() {
     // Update stock_qty (if not using DB trigger)
     // updateTotalStock();
 
-    accept();  // Close dialog
+    accept();  
 }
 
+
+/* If Database trigger fails or not used, this function can be used to update stock_qty
 void ProductEditor::updateTotalStock() {
     QSqlQuery query(db);
     query.prepare("UPDATE product SET stock_qty = (SELECT IFNULL(SUM(stock_qty), 0) FROM product_details WHERE product_ID = :id) WHERE product_ID = :id");
@@ -153,6 +156,7 @@ void ProductEditor::updateTotalStock() {
         qDebug() << "Failed to update stock_qty:" << query.lastError().text();
     }
 }
+*/
 
 void ProductEditor::addDetail() {
     AddProductDetailsWindow dialog(this);

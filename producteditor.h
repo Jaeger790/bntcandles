@@ -11,7 +11,8 @@ class ProductEditor : public QDialog {
     Q_OBJECT
 
 public:
-    explicit ProductEditor(const QString &productId, const QSqlDatabase &db, QWidget *parent = nullptr);  // Empty productId for add
+    explicit ProductEditor(const QString &productId, 
+    const QSqlDatabase &db, QWidget *parent = nullptr); 
     ~ProductEditor();
 
 private slots:
@@ -19,13 +20,13 @@ private slots:
     void addDetail();
     void editDetail();
     void deleteDetail();
-    void saveChanges();  // Connected to Save button
+    void saveChanges();  
 
 private:
-    void updateTotalStock();  // If not using DB trigger
+    void updateTotalStock();  
     Ui::ProductEditor *ui;
     QSqlTableModel *detailsModel;
-    QString productId;  // Empty for new product
+    QString productId;  
     QSqlDatabase db;
     bool isNewProduct;
 };
