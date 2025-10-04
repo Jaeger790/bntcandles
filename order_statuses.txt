@@ -1,0 +1,6 @@
+Pending
+Paid
+Shipped
+Delivered
+Cancelled
+Complete

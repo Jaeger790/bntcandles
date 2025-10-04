@@ -1,12 +1,14 @@
 #include "ordereditor.h"
-#include "ui_ordereditor.h" // This header must define Ui::OrderEditor
-#include "addorderdetailwindow.h"  // Note: Filename mismatch? Should be AddOrderDetailWindow.h/cpp
+#include "ui_ordereditor.h" 
+#include "addorderdetailwindow.h" 
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>
 #include <QMessageBox>
 #include <QDebug>
-#include <QDate>  // Added for date handling
+#include <QDate>
+#include <QFile>
+#include <QTextStream>
 
 OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget *parent)
     : QDialog(parent), ui(new Ui::OrderEditor()), orderId(orderId), db(db), isNewOrder(orderId.isEmpty()) {
@@ -21,24 +23,24 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
     itemsModel = new QSqlTableModel(this, db);
     itemsModel->setTable("order_items");
     if (!isNewOrder) {
-        itemsModel->setFilter(QString("order_id = '%1'").arg(orderId));  // Fixed: lowercase 'id'
+        itemsModel->setFilter(QString("order_id = '%1'").arg(orderId)); 
         // Load existing customer for edit
         QSqlQuery loadQuery(db);
-        loadQuery.prepare("SELECT customer_id, status_id, order_date FROM orders WHERE order_id = :orderId");  // Added status_id, order_date
+        loadQuery.prepare("SELECT customer_id, status, order_date FROM orders WHERE order_id = :orderId"); 
         loadQuery.bindValue(":orderId", orderId);
         if (loadQuery.exec() && loadQuery.next()) {
             int custId = loadQuery.value("customer_id").toInt();
-            int statusId = loadQuery.value("status_id").toInt();  // Load status
-            QDate orderDate = loadQuery.value("order_date").toDate();  // Load date (assume QDateEdit in UI)
+            int statusId = loadQuery.value("status").toInt(); 
+            QDate orderDate = loadQuery.value("order_date").toDate(); 
             int custIndex = ui->customerCombo->findData(custId);
             if (custIndex >= 0) {
                 ui->customerCombo->setCurrentIndex(custIndex);
             }
-            int statusIndex = ui->statusCombo->findData(statusId);  // Set status
+            int statusIndex = ui->statusCombo->findData(statusId); 
             if (statusIndex >= 0) {
                 ui->statusCombo->setCurrentIndex(statusIndex);
             }
-            if (ui->dateEdit) {  // Assume name="dateEdit" in UI; adjust if different
+            if (ui->dateEdit) {  
                 ui->dateEdit->setDate(orderDate);
             }
         } else {
@@ -48,7 +50,7 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
     itemsModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
     itemsModel->setHeaderData(0, Qt::Horizontal, "Item ID");
     itemsModel->setHeaderData(1, Qt::Horizontal, "Order ID");
-    itemsModel->setHeaderData(2, Qt::Horizontal, "Detail ID");  // Changed to match schema
+    itemsModel->setHeaderData(2, Qt::Horizontal, "Detail ID"); 
     itemsModel->setHeaderData(3, Qt::Horizontal, "Quantity");
     itemsModel->setHeaderData(4, Qt::Horizontal, "Unit Price");
     itemsModel->setHeaderData(5, Qt::Horizontal, "Tax Rate (%)");
@@ -62,17 +64,18 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
     ui->itemsTable->setModel(itemsModel);
     ui->itemsTable->setColumnHidden(0, true);
     ui->itemsTable->setColumnHidden(1, true);
-    ui->itemsTable->resizeColumnsToContents();
+    
     ui->itemsTable->horizontalHeader()->setStretchLastSection(true);
     ui->itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->itemsTable->resizeColumnsToContents();
 
     // Connect buttons
     connect(ui->addItemButton, &QPushButton::clicked, this, &OrderEditor::addItem);
     connect(ui->editItemButton, &QPushButton::clicked, this, &OrderEditor::editItem);
     connect(ui->deleteItemButton, &QPushButton::clicked, this, &OrderEditor::deleteItem);
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &OrderEditor::saveAndClose);  // OK -> save & close
-    connect(ui->saveOrderButton, &QPushButton::clicked, this, &OrderEditor::saveOrderDetails);  // NEW: Connect Save Order button
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &OrderEditor::saveAndClose);  
+    connect(ui->saveOrderButton, &QPushButton::clicked, this, &OrderEditor::saveOrderDetails);  
 
     if (isNewOrder) {
         // Disable item management until order is saved
@@ -85,8 +88,8 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
         ui->deleteItemButton->setEnabled(false);
         ui->deleteItemButton->setStyleSheet("background-color: #00000079; color: #000000089;");
         ui->deleteItemButton->setToolTip("Save the order first");
-        // FIXED: Use Ok instead of Save (OK is the "Save & Close" button)
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);  // Disable OK until header saved
+        
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);  
         ui->buttonBox->button(QDialogButtonBox::Ok)->setStyleSheet("background-color: #00000079; color: #000000089;");
         ui->buttonBox->button(QDialogButtonBox::Ok)->setToolTip("Save the order header first");
         // NEW: Leave saveOrderButton enabled for new orders
@@ -107,71 +110,120 @@ void OrderEditor::populateCustomerCombo() {
     }
 }
 
+
 void OrderEditor::populateStatusCombo() {
-    ui->statusCombo->clear();  // Assume QComboBox *statusCombo in UI
-    QSqlQuery query(db);
-    query.exec("SELECT status_id, status_name FROM order_status ORDER BY status_name");
-    while (query.next()) {
-        ui->statusCombo->addItem(query.value("status_name").toString(), query.value("status_id"));
+    ui->statusCombo->clear();
+
+    QFile file(":/order_statuses.txt");  // Resource path: :/filename
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open statuses.txt:" << file.errorString();
+        // Fallback: Minimal hardcode (no file dep)
+        ui->statusCombo->addItem("Pending", 1);
+        ui->statusCombo->addItem("Shipped", 2);
+        ui->statusCombo->addItem("Delivered", 3);
+        qDebug() << "Fallback: Added 3 hardcoded items";
+        return;
+    }
+    QTextStream in(&file);
+    QStringList statuses;
+    int statusId = 1;
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();  // Read line, strip whitespace
+        if (!line.isEmpty()) {  // Skip blanks/comments
+            statuses.append(line);
+            ui->statusCombo->addItem(line, statusId++);  // Name + ID
+        }
+    }
+    file.close();
+    if (statuses.isEmpty()) {
+        qDebug() << "No statuses from TXT—using fallback";
+        // ... fallback as above
+        return;
+    }
+    // Set default (new order: first; edit: from loadQuery in ctor)
+    if (isNewOrder) {
+        ui->statusCombo->setCurrentIndex(0);  // Pending
     }
 }
 
-void OrderEditor::saveOrderDetails() {  
-    int custId = ui->customerCombo->currentData().toInt();
-    int statusId = ui->statusCombo->currentData().toInt();
-    QDate orderDate = ui->dateEdit ? ui->dateEdit->date() : QDate::currentDate();  
+void OrderEditor::saveOrderDetails() {
+    qDebug() << "=== saveOrderDetails() START ===";
 
-    if (custId <= 0) {
+    // Validation
+    if (ui->customerCombo->currentIndex() < 0) {
         QMessageBox::warning(this, "Validation Error", "Please select a customer.");
+        qDebug() << "Validation fail: No customer selected";
+        return;
+    }
+    if (ui->statusCombo->currentIndex() < 0) {
+        QMessageBox::warning(this, "Validation Error", "Please select a status.");
+        qDebug() << "Validation fail: No status selected";
         return;
     }
 
+    int custId = ui->customerCombo->currentData().toInt();
+    QString statusText = ui->statusCombo->currentText();  // NEW: Bind string for ENUM
+    QDate orderDate = ui->dateEdit->date();  // Assume QDateEdit; defaults to today if null
+
+    qDebug() << "Saving: CustID=" << custId << ", Status=" << statusText << ", Date=" << orderDate;
+
     QSqlQuery query(db);
     if (isNewOrder) {
-        // Insert new order
-        query.prepare("INSERT INTO orders (customer_id, status_id, order_date) VALUES (:custId, :statusId, :orderDate)"); 
+        // INSERT: Only required fields—triggers/defaults handle totals
+        query.prepare("INSERT INTO orders (customer_ID, order_date, status) "
+                      "VALUES (:custId, :orderDate, :status)");
         query.bindValue(":custId", custId);
-        query.bindValue(":statusId", statusId);
         query.bindValue(":orderDate", orderDate);
+        query.bindValue(":status", statusText);  // ENUM string bind
         if (!query.exec()) {
-            QMessageBox::warning(this, "Database Error", "Failed to create order: " + query.lastError().text());
+            QString err = query.lastError().text();
+            qDebug() << "INSERT failed: " << err;
+            QMessageBox::warning(this, "Database Error", "Failed to create order: " + err);
             return;
         }
         orderId = query.lastInsertId().toString();
         isNewOrder = false;
+        qDebug() << "New order created with ID:" << orderId;
 
-        // FIXED: Lowercase 'order_id' in filter
-        itemsModel->setFilter(QString("order_id = '%1'").arg(orderId));
-        itemsModel->select();
+        // Refresh items filter
+        itemsModel->setFilter(QString("order_ID = '%1'").arg(orderId));  // Schema: order_ID
+        if (!itemsModel->select()) {
+            qDebug() << "Items filter select failed:" << itemsModel->lastError().text();
+        }
 
-        // Enable item buttons and OK (save & close)
+        // Enable controls (as before)
         ui->addItemButton->setEnabled(true);
-        ui->addItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65) ; color:hsla(52, 100%, 95%, 1);");
-        ui->addItemButton->setToolTip("");  // Clear tooltip
+        ui->addItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
+        ui->addItemButton->setToolTip("");
         ui->editItemButton->setEnabled(true);
-        ui->editItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65) ; color:hsla(52, 100%, 95%, 1);");
+        ui->editItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
         ui->editItemButton->setToolTip("");
         ui->deleteItemButton->setEnabled(true);
-        ui->deleteItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65) ; color:hsla(52, 100%, 95%, 1);");
+        ui->deleteItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
         ui->deleteItemButton->setToolTip("");
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);  
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setStyleSheet("background-color:hsla(319, 30%, 16%, .65) ; color:hsla(52, 100%, 95%, 1);");
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setToolTip("");
-
-        
+        auto okButton = ui->buttonBox->button(QDialogButtonBox::Ok);
+        if (okButton) {
+            okButton->setEnabled(true);
+            okButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
+            okButton->setToolTip("");
+        }
     } else {
-        // Update existing order header
-        query.prepare("UPDATE orders SET customer_id = :custId, status_id = :statusId, order_date = :orderDate WHERE order_id = :orderId");
+        query.prepare("UPDATE orders SET customer_ID = :custId, order_date = :orderDate, status = :status "
+                      "WHERE order_ID = :orderId");
         query.bindValue(":custId", custId);
-        query.bindValue(":statusId", statusId);
         query.bindValue(":orderDate", orderDate);
+        query.bindValue(":status", statusText);
         query.bindValue(":orderId", orderId);
         if (!query.exec()) {
-            QMessageBox::warning(this, "Database Error", "Failed to update order: " + query.lastError().text());
+            QString err = query.lastError().text();
+            qDebug() << "UPDATE failed: " << err;
+            QMessageBox::warning(this, "Database Error", "Failed to update order: " + err);
             return;
         }
-        qDebug() << "Order header updated.";
+        qDebug() << "Order updated: ID=" << orderId;
     }
+
+    qDebug() << "=== saveOrderDetails() END ===";
 }
 
 void OrderEditor::addItem() {
@@ -179,8 +231,6 @@ void OrderEditor::addItem() {
         QMessageBox::warning(this, "Error", "Please save the order first.");
         return;
     }
-
-    
 
     AddOrderDetailWindow dialog(db, this);  
     if (dialog.exec() == QDialog::Accepted) {

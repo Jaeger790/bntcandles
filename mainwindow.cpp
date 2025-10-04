@@ -117,204 +117,120 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     }
 
     // Connect Product Table to ui
-
     ui->productTable->setModel(productModel);
-
     ui->productTable->setColumnHidden(0, true); // Hide product_id
-
     ui->productTable->resizeColumnsToContents();
-
     ui->productTable->horizontalHeader()->setStretchLastSection(false);
-
     ui->productTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
     ui->productTable->setSelectionMode(QAbstractItemView::SingleSelection);
-
     ui->productTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     // Connect Product Buttons to ui
-
     connect(ui->addProductButton, &QPushButton::clicked, this, &BNTcandles::addProduct);
-
     connect(ui->editProductButton, &QPushButton::clicked, this, &BNTcandles::editProduct);
-
     connect(ui->deleteProductButton, &QPushButton::clicked, this, &BNTcandles::deleteProduct);
-
+    
     // Connect the double click function to table ui
+    connect(ui->productTable, &QTableView::doubleClicked, this, [this](const QModelIndex &index){
+        ui->productTable->selectRow(index.row()); //table selection
+    
+        // Get the product_ID from the selected row (column 0)
+        QString productId = productModel->data(productModel->index(index.row(), 0)).toString();
 
-    connect(ui->productTable, &QTableView::doubleClicked, this, [this](const QModelIndex &index)
-            {
-                ui->productTable->selectRow(index.row()); // Ensure selection
-
-                qDebug() << "Double-clicked product row: " << index.row();
-
-                // Get the product_ID from the selected row (column 0)
-
-                QString productId = productModel->data(productModel->index(index.row(), 0)).toString();
-
-                // Open ProductDetailsWindow
-
-                ProductDetailsWindow detailsWindow(productId, productModel->database(), this);
-
-                detailsWindow.exec(); // Show as modal dialog
-            });
+        // Open ProductDetailsWindow
+        ProductDetailsWindow detailsWindow(productId, productModel->database(), this);
+        detailsWindow.exec(); 
+    });
 
     // Create order model with join on customer to display custom view
-
     orderModel = new QSqlTableModel(this, db);
-
     orderModel->setTable("ordersview");
-
     orderModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
-
     orderModel->setHeaderData(0, Qt::Horizontal, "Order ID");
-
     orderModel->setHeaderData(1, Qt::Horizontal, "First Name"); // from customer table linked by custId.
-
     orderModel->setHeaderData(2, Qt::Horizontal, "Last Name"); // from customer table
-
     orderModel->setHeaderData(3, Qt::Horizontal, "Order Date");
-
     orderModel->setHeaderData(4, Qt::Horizontal, "Status");
-
     orderModel->setHeaderData(5, Qt::Horizontal, "Subtotal");
-
     orderModel->setHeaderData(6, Qt::Horizontal, "Tax Amount");
-
     orderModel->setHeaderData(7, Qt::Horizontal, "Grand Total");
-
     orderModel->setHeaderData(8, Qt::Horizontal, "Payment Method");
-
     // bool selectSuccess = orderModel->select();
 
-    if (!orderModel->select())
-    {
-
+    if (!orderModel->select()){
         qDebug() << "Expense model error:" << orderModel->lastError().text();
-
         QMessageBox::warning(this, "Data Error", "Failed to load expenses: " + orderModel->lastError().text());
     }
 
     // Connect Order Table to ui
-
     ui->orderTable->setModel(orderModel);
-
     ui->orderTable->setColumnHidden(0, false); // Hide order_id or not
-
     ui->orderTable->resizeColumnsToContents();
-
     ui->orderTable->horizontalHeader()->setStretchLastSection(false);
-
     ui->orderTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
     ui->orderTable->setSelectionMode(QAbstractItemView::SingleSelection);
-
     ui->orderTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     // Connect orderTable double-click to open OrderDetailsWindow
-
-    connect(ui->orderTable, &QTableView::doubleClicked, this, [this, db](const QModelIndex &index)
-            {
-                QString orderId = orderModel->data(orderModel->index(index.row(), 0)).toString();
-
-                qDebug() << "Double-clicked order ID: " << orderId;
-
-                OrderDetailsWindow *dialog = new OrderDetailsWindow(orderId, db, this);
-
-                dialog->exec();
-
-                delete dialog; // Clean up to prevent memory leak
-            });
+    connect(ui->orderTable, &QTableView::doubleClicked, this, [this, db](const QModelIndex &index){
+        QString orderId = orderModel->data(orderModel->index(index.row(), 0)).toString();
+        OrderDetailsWindow *dialog = new OrderDetailsWindow(orderId, db, this);
+        dialog->exec();
+        delete dialog; // Clean up to prevent memory leak
+    }); 
 
     // Connect buttons
-
     connect(ui->addOrderButton, &QPushButton::clicked, this, &BNTcandles::addOrder);
-
     connect(ui->editOrderButton, &QPushButton::clicked, this, &BNTcandles::editOrder);
-
     connect(ui->deleteOrderButton, &QPushButton::clicked, this, &BNTcandles::deleteOrder);
 
     // Create expense model
-
     expenseModel = new QSqlTableModel(this, db);
-
     expenseModel->setTable("expense_orders");
-
     expenseModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
-
     expenseModel->setHeaderData(0, Qt::Horizontal, "Order ID");
-
     expenseModel->setHeaderData(1, Qt::Horizontal, "Date");
-
     expenseModel->setHeaderData(2, Qt::Horizontal, "Total");
-
     expenseModel->setHeaderData(3, Qt::Horizontal, "Payment Method");
-
     expenseModel->setHeaderData(4, Qt::Horizontal, "Company");
 
-    if (!expenseModel->select())
-    {
-
+    if (!expenseModel->select()){
         qDebug() << "Expense model error:" << expenseModel->lastError().text();
-
         QMessageBox::warning(this, "Data Error", "Failed to load expenses: " + expenseModel->lastError().text());
     }
 
     // Connect Expense Table to ui
-
     ui->expenseTable->setModel(expenseModel);
-
     ui->expenseTable->setColumnHidden(10, true); // Hide Created At column
-
     ui->expenseTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
     ui->expenseTable->setSelectionMode(QAbstractItemView::SingleSelection);
-
     ui->expenseTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-
     ui->expenseTable->resizeColumnsToContents();
-
     ui->expenseTable->horizontalHeader()->setStretchLastSection(false);
 
     // Connect expenseTable double-click to open ExpenseDetailsWindow
-
-    connect(ui->expenseTable, &QTableView::doubleClicked, this, [this, db](const QModelIndex &index)
-            {
-                QString orderId = expenseModel->data(expenseModel->index(index.row(), 0)).toString();
-
-                qDebug() << "Double-clicked expense order ID: " << orderId;
-
-                ExpenseDetailsWindow *dialog = new ExpenseDetailsWindow(orderId, db, this);
-
-                dialog->exec();
-
-                delete dialog; // Clean up to prevent memory leak
-            });
+    connect(ui->expenseTable, &QTableView::doubleClicked, this, [this, db](const QModelIndex &index){
+        QString orderId = expenseModel->data(expenseModel->index(index.row(), 0)).toString();
+        qDebug() << "Double-clicked expense order ID: " << orderId;
+        ExpenseDetailsWindow *dialog = new ExpenseDetailsWindow(orderId, db, this);
+        dialog->exec();
+        delete dialog; // Clean up to prevent memory leak
+    });
 
     // Connect Expense buttons
-
     connect(ui->addExpenseButton, &QPushButton::clicked, this, &BNTcandles::addExpense);
-
     connect(ui->editExpenseButton, &QPushButton::clicked, this, &BNTcandles::editExpense);
-
     connect(ui->deleteExpenseButton, &QPushButton::clicked, this, &BNTcandles::deleteExpense);
 
     // Set up reports page
-
     reportsPage = new ReportsPage(db, this);
-
     ui->menuStack->insertWidget(4, reportsPage);
 
     // Connect navigation buttons to appropriate pages
-
     connect(ui->customerButton, &QPushButton::clicked, this, &BNTcandles::customerButtonClicked);
-
     connect(ui->productButton, &QPushButton::clicked, this, &BNTcandles::productButtonClicked);
-
     connect(ui->orderButton, &QPushButton::clicked, this, &BNTcandles::orderButtonClicked);
-
     connect(ui->expenseButton, &QPushButton::clicked, this, &BNTcandles::expenseButtonClicked);
-
     connect(ui->reportButton, &QPushButton::clicked, this, &BNTcandles::reportButtonClicked);
 
     /*
@@ -701,20 +617,18 @@ void BNTcandles::addOrder()
     }
 }
 
-void BNTcandles::editOrder()
-{
+void BNTcandles::editOrder(){
     QModelIndexList selection = ui->orderTable->selectionModel()->selectedRows();
-    if (selection.isEmpty())
-    {
+    
+    if (selection.isEmpty()){
         QMessageBox::warning(this, "Selection Error", "Please select an order to edit.");
         return;
     }
     int row = selection.first().row();
     QString orderId = orderModel->data(orderModel->index(row, 0)).toString();
-
     OrderEditor dialog(orderId, db, this);
-    if (dialog.exec() == QDialog::Accepted)
-    {
+    
+    if (dialog.exec() == QDialog::Accepted){
         orderModel->select();
         ui->orderTable->resizeColumnsToContents();
     }
