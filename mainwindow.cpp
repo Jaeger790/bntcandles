@@ -8,10 +8,10 @@
 #include "./ui_mainwindow.h"
 #include "addcustomer.h"
 #include "productdetailswindow.h"
-#include "addexpense.h"
 #include "reportspage.h"
 #include "producteditor.h"
 #include "ordereditor.h"
+#include "expenseeditor.h"
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlTableModel>
@@ -42,20 +42,21 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
         qDebug() << "Failed to load stylesheet for MainWindow";
     }
 
-    /* // Set up database connection
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("");
-    db.setPort();
-    db.setDatabaseName("");
-    db.setUserName("");
-    db.setPassword(""); */
-
+    /* // Production DB credentials
     QSettings settings(":/db_cred.ini", QSettings::IniFormat);
     QString host = settings.value("prod_db/host").toString();
     int port = settings.value("prod_db/port").toInt();
     QString dbName = settings.value("prod_db/name").toString();
     QString user = settings.value("prod_db/user").toString();
     QString password = settings.value("prod_db/password").toString();
+     */
+    //Test DB credentials
+    QSettings settings(":/db_cred.ini", QSettings::IniFormat);
+    QString host = settings.value("test_db/host").toString();
+    int port = settings.value("test_db/port").toInt();
+    QString dbName = settings.value("test_db/name").toString();
+    QString user = settings.value("test_db/user").toString();
+    QString password = settings.value("test_db/password").toString();
 
     // Set up database connection
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
@@ -234,235 +235,123 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     connect(ui->reportButton, &QPushButton::clicked, this, &BNTcandles::reportButtonClicked);
 
     /*
-
     QList<QPushButton*> buttons = this->findChildren<QPushButton*>();
-
     for (QPushButton *btn : buttons) {
-
         QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(btn);
-
         shadow->setBlurRadius(30);
-
         shadow->setXOffset(5);
-
         shadow->setYOffset(5);
-
         shadow->setColor(QColor(177,156,217,250));
-
         btn->setGraphicsEffect(shadow);
-
     }
-
      */
-
     // Set initial page to customer page
-
     ui->menuStack->setCurrentIndex(0);
 }
-
 /*
-
  * Customer Functions: Add, Edit, and delete
-
  * Add Customer
-
  */
-
 void BNTcandles::addCustomer()
-
 {
-
     AddCustomerWindow dialog(this);
-
-    if (dialog.exec() == QDialog::Accepted)
-    {
-
+    if (dialog.exec() == QDialog::Accepted){
         QSqlRecord record = customerModel->record();
-
         record.setValue("first_name", dialog.firstName());
-
         record.setValue("last_name", dialog.lastName());
-
         record.setValue("phone", dialog.phone());
-
         record.setValue("email", dialog.email());
-
         record.setValue("address_street", dialog.address());
-
         record.setValue("address_city", dialog.city());
-
         record.setValue("address_state", dialog.state());
-
         record.setValue("address_zip", dialog.zip());
-
         record.setValue("company_name", dialog.company());
-
-        if (customerModel->insertRecord(-1, record))
-        {
-
-            if (customerModel->submitAll())
-            {
-
+        if (customerModel->insertRecord(-1, record)){
+            if (customerModel->submitAll()){
                 ui->customerTable->resizeColumnsToContents();
-            }
-            else
-            {
-
+            }else{
                 QMessageBox::warning(this, "Error", "Failed to add customer record: " + customerModel->lastError().text());
             }
-        }
-        else
-        {
-
+        }else{
             QMessageBox::warning(this, "Error", "Failed to add customer record: " + customerModel->lastError().text());
         }
     }
 }
 
 /*
-
  * Edit Customer
-
 */
-
-void BNTcandles::editCustomer()
-{
-
+void BNTcandles::editCustomer(){
     QModelIndexList selection = ui->customerTable->selectionModel()->selectedRows();
-
-    if (selection.isEmpty())
-    {
-
+    if (selection.isEmpty()){
         QMessageBox::warning(this, "Selection Error", "Please select a customer from the table to edit.");
-
         return;
     }
-
     int row = selection.first().row();
-
     QSqlRecord record = customerModel->record(row);
-
     AddCustomerWindow dialog(this);
-
     dialog.setWindowTitle("Edit Customer");
-
     dialog.setFirstName(record.value("first_name").toString());
-
     dialog.setLastName(record.value("last_name").toString());
-
     dialog.setPhone(record.value("phone").toString());
-
     dialog.setEmail(record.value("email").toString());
-
     dialog.setAddress(record.value("address_street").toString());
-
     dialog.setCity(record.value("address_city").toString());
-
     dialog.setState(record.value("address_state").toString());
-
     dialog.setZip(record.value("address_zip").toString());
-
     dialog.setCompany(record.value("company_name").toString());
-
-    if (dialog.exec() == QDialog::Accepted)
-    {
-
+    if (dialog.exec() == QDialog::Accepted){
         record.setValue("first_name", dialog.firstName());
-
         record.setValue("last_name", dialog.lastName());
-
         record.setValue("phone", dialog.phone());
-
         record.setValue("email", dialog.email());
-
         record.setValue("address_street", dialog.address());
-
         record.setValue("address_city", dialog.city());
-
         record.setValue("address_state", dialog.state());
-
         record.setValue("address_zip", dialog.zip());
-
         record.setValue("company_name", dialog.company());
-
-        if (customerModel->setRecord(row, record))
-        {
-
-            if (customerModel->submitAll())
-            {
-
+        if (customerModel->setRecord(row, record)){
+            if (customerModel->submitAll()){
                 ui->customerTable->resizeColumnsToContents();
-            }
-            else
-            {
-
+            }else{
                 QMessageBox::warning(this, "Error", "Failed to update customer: " + customerModel->lastError().text());
             }
-        }
-        else
-        {
-
+        }else{
             QMessageBox::warning(this, "Error", "Failed to set customer record: " + customerModel->lastError().text());
         }
     }
 }
 
 /*
-
  * Delete Customer
-
 */
-
-void BNTcandles::deleteCustomer()
-{
-
+void BNTcandles::deleteCustomer(){
     QModelIndexList selection = ui->customerTable->selectionModel()->selectedRows();
-
-    if (selection.isEmpty())
-    {
-
+    if (selection.isEmpty()){
         QMessageBox::warning(this, "Selection Error", "Please select a csutomer from the table to delete");
     }
-
     QMessageBox::StandardButton reply = QMessageBox::question(
-
         this, "Confirm Delete", "Are you sure you wish to delete the selected customer", QMessageBox::Yes | QMessageBox::No);
-
-    if (reply == QMessageBox::Yes)
-    {
-
-        std::sort(selection.begin(), selection.end(), [](const QModelIndex &a, const QModelIndex &b)
-                  {
+    if (reply == QMessageBox::Yes){
+        std::sort(selection.begin(), selection.end(), [](const QModelIndex &a, const QModelIndex &b){
                       return a.row() > b.row();
-                  });
+                    });
 
-        for (const auto &index : selection)
-        {
-
+        for (const auto &index : selection){
             customerModel->removeRow(index.row());
         }
-
-        if (customerModel->submitAll())
-        {
-
+        if (customerModel->submitAll()){
             ui->customerTable->resizeColumnsToContents();
-        }
-        else
-        {
-
+        }else{
             QMessageBox::warning(this, "Error", "Failed to delete customer: " + customerModel->lastError().text());
         }
     }
 }
 
 /*
-
  * Product Fucntions: Add,Edit, and Delete
-
  * Add Product
-
 */
-
 void BNTcandles::addProduct()
 {
 
@@ -717,228 +606,77 @@ void BNTcandles::deleteOrder()
 }
 
 void BNTcandles::addExpense()
-
 {
-
-    AddExpense dialog(db, this);
-
-    dialog.setWindowTitle("Add Expense Order");
-
-    if (dialog.exec() != QDialog::Accepted)
-        return;
-
-    QSqlQuery query(db);
-
-    query.prepare("INSERT INTO expense_orders (date, payment_method, source) VALUES (:date, :payment, :source)");
-
-    query.bindValue(":date", dialog.date());
-
-    query.bindValue(":payment", dialog.paymentMethod());
-
-    query.bindValue(":source", dialog.source());
-
-    if (!query.exec())
-    {
-
-        QMessageBox::warning(this, "Database Error", "Failed to add order: " + query.lastError().text());
-
-        return;
+    qDebug() << "Opening ExpenseEditor for new expense";
+    ExpenseEditor editor("", db, this);  // Empty ID = new
+    if (editor.exec() == QDialog::Accepted) {
+        qDebug() << "New expense saved";
+        expenseModel->select();  // Refresh expense table
+    } else {
+        qDebug() << "Add cancelled";
     }
-
-    QString orderId = query.lastInsertId().toString();
-
-    // Open details window to add items
-
-    int reply = QMessageBox::question(this, "Add Details", "Do you want to add items to this order now?", QMessageBox::Yes | QMessageBox::No);
-
-    if (reply == QMessageBox::Yes)
-    {
-
-        ExpenseDetailsWindow detailsWindow(orderId, db, this);
-
-        detailsWindow.exec();
-    }
-
-    expenseModel->select(); // Refresh
 }
 
 void BNTcandles::editExpense()
-
 {
-
-    // Get selected order from table
-
     QModelIndexList selection = ui->expenseTable->selectionModel()->selectedRows();
-
-    if (selection.isEmpty())
-    {
-
-        QMessageBox::warning(this, "Selection Error", "Please select an expense order to edit.");
-
+    if (selection.isEmpty()) {
+        QMessageBox::warning(this, "Selection Error", "Please select an expense to edit.");
         return;
     }
-
     int row = selection.first().row();
-
-    QString orderId = expenseModel->data(expenseModel->index(row, 0)).toString();
-
-    // Load existing order data
-
-    QSqlQuery query(db);
-
-    query.prepare("SELECT date, payment_method, source FROM expense_orders WHERE order_id = :orderId");
-
-    query.bindValue(":orderId", orderId);
-
-    if (!query.exec() || !query.next())
-    {
-
-        qDebug() << "Query failed:" << query.lastError().text();
-
-        QMessageBox::warning(this, "Database Error", "Failed to load order: " + query.lastError().text());
-
-        return;
-    }
-
-    // Open dialog for order-level edits
-
-    AddExpense dialog(db, this);
-
-    dialog.setWindowTitle("Edit Expense Order");
-
-    dialog.setEditMode(true);
-
-    dialog.setDate(query.value("date").toDate());
-
-    dialog.setPaymentMethod(query.value("payment_method").toString());
-
-    dialog.setSource(query.value("source").toString());
-
-    if (dialog.exec() == QDialog::Accepted)
-    {
-
-        query.prepare("UPDATE expense_orders SET date = :date, payment_method = :payment, source = :source WHERE order_id = :orderId");
-
-        query.bindValue(":date", dialog.date());
-
-        query.bindValue(":payment", dialog.paymentMethod());
-
-        query.bindValue(":source", dialog.source());
-
-        query.bindValue(":orderId", orderId);
-
-        if (query.exec())
-        {
-
-            qDebug() << "Order updated successfully.";
-
-            expenseModel->select(); // Refresh table
-
-            // Optionally open details window
-
-            int reply = QMessageBox::question(this, "Edit Details", "Do you want to edit the order details now?", QMessageBox::Yes | QMessageBox::No);
-
-            if (reply == QMessageBox::Yes)
-            {
-
-                ExpenseDetailsWindow detailsWindow(orderId, db, this);
-
-                detailsWindow.exec();
-
-                expenseModel->select(); // Refresh again
-            }
-        }
-        else
-        {
-
-            qDebug() << "Update failed:" << query.lastError().text();
-
-            QMessageBox::warning(this, "Database Error", "Failed to update order: " + query.lastError().text());
-        }
+    QString orderId = expenseModel->data(expenseModel->index(row, 0)).toString();  // Col 0 = order_id
+    qDebug() << "Opening ExpenseEditor for edit, orderId:" << orderId;
+    ExpenseEditor editor(orderId, db, this);
+    if (editor.exec() == QDialog::Accepted) {
+        qDebug() << "Edit saved";
+        expenseModel->select();  // Refresh
+    } else {
+        qDebug() << "Edit cancelled";
     }
 }
 
-void BNTcandles::deleteExpense()
-
-{
-
+void BNTcandles::deleteExpense(){
     QModelIndexList selection = ui->expenseTable->selectionModel()->selectedRows();
-
-    if (selection.isEmpty())
-    {
-
+    if (selection.isEmpty()){
         QMessageBox::warning(this, "Selection Error", "Please select an expense order to delete.");
-
         return;
     }
-
     int row = selection.first().row();
-
     QString orderId = expenseModel->data(expenseModel->index(row, 0)).toString();
-
     qDebug() << "Selected order_id for delete:" << orderId;
-
     // Confirm deletion
-
     int reply = QMessageBox::question(this, "Confirm Delete", "Are you sure you want to delete this order and all its details?", QMessageBox::Yes | QMessageBox::No);
-
     if (reply != QMessageBox::Yes)
         return;
-
     QSqlQuery query(db);
-
     query.prepare("DELETE FROM expense_orders WHERE order_id = :orderId");
-
     query.bindValue(":orderId", orderId);
-
-    if (query.exec())
-    {
-
+    if (query.exec()){
         qDebug() << "Order deleted successfully (details cascaded).";
-
         expenseModel->select(); // Refresh table
-    }
-    else
-    {
-
-        qDebug() << "Delete failed:" << query.lastError().text();
-
+    }else{
         QMessageBox::warning(this, "Database Error", "Failed to delete order: " + query.lastError().text());
     }
 }
 
-void BNTcandles::customerButtonClicked()
-
-{
-
+void BNTcandles::customerButtonClicked(){
     ui->menuStack->setCurrentIndex(0);
 }
 
-void BNTcandles::productButtonClicked()
-
-{
-
+void BNTcandles::productButtonClicked(){
     ui->menuStack->setCurrentIndex(1);
 }
 
-void BNTcandles::orderButtonClicked()
-
-{
-
+void BNTcandles::orderButtonClicked(){
     ui->menuStack->setCurrentIndex(2);
 }
 
-void BNTcandles::expenseButtonClicked()
-
-{
-
+void BNTcandles::expenseButtonClicked(){
     ui->menuStack->setCurrentIndex(3);
 }
 
-void BNTcandles::reportButtonClicked()
-
-{
-
+void BNTcandles::reportButtonClicked(){
     ui->menuStack->setCurrentIndex(4);
 }
 

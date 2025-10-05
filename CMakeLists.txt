@@ -36,49 +36,89 @@ endif()
 
 set(SOURCES
     main.cpp
+
     mainwindow.cpp
+
+    addcustomer.cpp
+
+    producteditor.cpp
+    productdetailswindow.cpp
+    addproductdetailswindow.cpp
+
+    ordereditor.cpp
+    orderdetailswindow.cpp
+    addorderdetailwindow.cpp
+    
+    expenseeditor.cpp
     expenseDetailsWindow.cpp
     addExpenseDetailWindow.cpp
-    producteditor.cpp
-    ordereditor.cpp
+
+    reportspage.cpp
+    
+    CustomerModel.cpp
 )
 
 set(HEADERS
     mainwindow.h
+
+    addcustomer.h
+
+    producteditor.h
+    productdetailswindow.h
+    addproductdetailswindow.h
+
+    ordereditor.h
+    orderdetailswindow.h
+    addorderdetailwindow.h
+
+    expenseeditor.h
     expenseDetailsWindow.h
     addExpenseDetailWindow.h
-    producteditor.h
-    ordereditor.h
+    
+    reportspage.h
+
+    CustomerModel.h
 )
 
 set(FORMS
     mainwindow.ui
+
+    addcustomer.ui
+
+    producteditor.ui
+    productdetailswindow.ui
+    addproductdetailswindow.ui
+
+    ordereditor.ui
+    orderdetailswindow.ui
+    addorderdetailwindow.ui
+
+    expenseeditor.ui
     expenseDetailsWindow.ui
     addExpenseDetailWindow.ui
-    producteditor.ui
-    ordereditor.ui
+
+
+    reportspage.ui
+ 
+    
 )
 
 set(RESOURCES
     resources.qrc
+    
+    db_cred.ini
+    taxRates.txt
+    states
+    bnt_icon.jpg
 )
 
-add_executable(BNTCandles ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES}
-    bnt_icon.jpg
-    addcustomer.h addcustomer.cpp addcustomer.ui
-    states
-    orderdetailswindow.h orderdetailswindow.cpp orderdetailswindow.ui
-    addorderdetailwindow.h addorderdetailwindow.cpp addorderdetailwindow.ui 
-    producteditor.h producteditor.cpp producteditor.ui
-    ordereditor.ui ordereditor.cpp ordereditor.h
-    productdetailswindow.h productdetailswindow.cpp productdetailswindow.ui
-    addproductdetailswindow.h addproductdetailswindow.cpp addproductdetailswindow.ui
-    reportspage.h reportspage.cpp reportspage.ui
-    taxRates.txt
-    addexpense.h addexpense.cpp addexpense.ui
-    CustomerModel.h
-    CustomerModel.cpp
-    db_cred.ini
+add_executable(BNTCandles 
+    ${SOURCES} 
+    ${HEADERS} 
+    ${FORMS} 
+    ${RESOURCES}
+    
+
 
 )
 
