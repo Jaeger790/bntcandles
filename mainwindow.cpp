@@ -42,21 +42,22 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
         qDebug() << "Failed to load stylesheet for MainWindow";
     }
 
-    /* // Production DB credentials
+/*      // Production DB credentials
     QSettings settings(":/db_cred.ini", QSettings::IniFormat);
     QString host = settings.value("prod_db/host").toString();
     int port = settings.value("prod_db/port").toInt();
     QString dbName = settings.value("prod_db/name").toString();
     QString user = settings.value("prod_db/user").toString();
-    QString password = settings.value("prod_db/password").toString();
-     */
+    QString password = settings.value("prod_db/password").toString(); */
+     
+
     //Test DB credentials
     QSettings settings(":/db_cred.ini", QSettings::IniFormat);
     QString host = settings.value("test_db/host").toString();
     int port = settings.value("test_db/port").toInt();
     QString dbName = settings.value("test_db/name").toString();
     QString user = settings.value("test_db/user").toString();
-    QString password = settings.value("test_db/password").toString();
+    QString password = settings.value("test_db/password").toString(); 
 
     // Set up database connection
     QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");

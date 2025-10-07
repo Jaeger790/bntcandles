@@ -24,7 +24,7 @@ AddOrderDetailWindow::AddOrderDetailWindow(const QSqlDatabase &db, QWidget *pare
     // Populate product combo
     QSqlQuery query(db);
     query.prepare("SELECT pd.detail_ID, p.product_name, pd.size, pd.price, pd.tax_rate "
-                  "FROM Product_Details pd JOIN Product p ON pd.product_ID = p.product_ID");
+                  "FROM product_details pd JOIN product p ON pd.product_ID = p.product_ID");
     if (query.exec()) {
         while (query.next()) {
             int detailId = query.value("detail_ID").toInt();
@@ -43,18 +43,19 @@ AddOrderDetailWindow::AddOrderDetailWindow(const QSqlDatabase &db, QWidget *pare
     connect(ui->productCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this, db](int index) {
         if (index >= 0) {
             QSqlQuery query(db);
-            query.prepare("SELECT price, tax_rate FROM Product_Details WHERE detail_ID = :detailId");
+            query.prepare("SELECT price, tax_rate FROM product_details WHERE detail_ID = :detailId");
             query.bindValue(":detailId", ui->productCombo->itemData(index).toInt());
             if (query.exec() && query.next()) {
                 double price = query.value("price").toDouble();
                 double taxRate = query.value("tax_rate").toDouble();
                 ui->unitPriceEdit->setText(QString::number(price, 'f', 2));
-                ui->taxRateEdit->setText(QString::number(taxRate, 'f', 2));
+                ui->taxRateEdit->setText(QString::number(taxRate, 'f', 4));
+                loadHTML();
                 // Update subtotal, tax, total when quantity changes
                 int qty = ui->quantityEdit->text().toInt();
                 if (qty > 0) {
                     double subtotal = qty * price;
-                    double taxAmount = subtotal * (taxRate / 100.0);
+                    double taxAmount = subtotal * (taxRate);
                     double total = subtotal + taxAmount;
                     ui->subtotalEdit->setText(QString::number(subtotal, 'f', 2));
                     ui->taxAmountEdit->setText(QString::number(taxAmount, 'f', 2));
@@ -70,18 +71,59 @@ AddOrderDetailWindow::AddOrderDetailWindow(const QSqlDatabase &db, QWidget *pare
         double price = ui->unitPriceEdit->text().toDouble();
         double taxRate = ui->taxRateEdit->text().toDouble();
         double subtotal = qty * price;
-        double taxAmount = subtotal * (taxRate / 100.0);
+        double taxAmount = subtotal * (taxRate);
         double total = subtotal + taxAmount;
         ui->subtotalEdit->setText(QString::number(subtotal, 'f', 2));
         ui->taxAmountEdit->setText(QString::number(taxAmount, 'f', 2));
         ui->totalEdit->setText(QString::number(total, 'f', 2));
+        loadHTML();
     });
+
+    loadHTML();
 }
 
 AddOrderDetailWindow::~AddOrderDetailWindow()
 {
     delete ui;
 }
+
+void AddOrderDetailWindow::loadHTML(){
+    // Placeholder if needed for future HTML loading functionality
+    QString html = R"(
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 1px; background-color: #2c3e50; }
+                h1 { color: #fff; }
+                p {color: white; font-size: 14px; }
+            </style>
+        </head>
+        
+        <body>
+            <h3>Unit Price</h3>
+            <p>%1</p>
+            <h3>Tax Rate</h3>
+            <p>%2</p>
+            <h3>Subtotal</h3>
+            <p>%3</p>
+            <h3>Tax Amount</h3>
+            <p>%4</p>
+            <h3>Total</h3>
+            <p>%5</p>
+        </body>
+        </html>
+    )";
+    html = html.arg(unitPrice()) 
+                .arg(taxRate() * 100, 0, 'f', 2) // Convert to percentage
+                .arg(subtotal())
+                .arg(taxAmount())
+                .arg(total());
+
+    ui->textBrowser->setHtml(html);
+    QString currentHtml = ui->textBrowser->toHtml();
+    
+    
+} 
 
 int AddOrderDetailWindow::detailId() const
 {

@@ -3,7 +3,8 @@
 
 #include <QWidget>
 #include <QSqlDatabase>
-#include <QSqlQueryModel>
+#include <QSqlQueryModel>  // Keep for now (deprecate later)
+#include <QTextBrowser>    // New: For HTML rendering
 
 namespace Ui {
 class ReportsPage;
@@ -24,11 +25,13 @@ private:
     void updateTotals();
     void updateCustomerSpending();
     void updateCandleSales();
+    void buildFullReportHtml();  // New: Assembles all sections into one doc
 
     Ui::ReportsPage *ui;
     QSqlDatabase db;
-    QSqlQueryModel *customerSpendingModel;
-    QSqlQueryModel *candleSalesModel;
+    QSqlQueryModel *customerSpendingModel;  // Legacy—remove post-test
+    QSqlQueryModel *candleSalesModel;       // ^
+    QTextBrowser *reportsBrowser;  // New: Single pane for everything
 };
 
 #endif // REPORTSPAGE_H

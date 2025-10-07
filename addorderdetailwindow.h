@@ -37,6 +37,9 @@ public:
     void setTaxAmount(double taxAmount);
     void setTotal(double total);
 
+private slots:
+    void loadHTML();
+
 private:
     Ui::AddOrderDetailWindow *ui;
     QSqlDatabase db;
