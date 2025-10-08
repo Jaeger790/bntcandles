@@ -4,7 +4,6 @@
  */
 #include "mainwindow.h"
 #include "expenseDetailsWindow.h"
-#include "orderdetailswindow.h"
 #include "./ui_mainwindow.h"
 #include "addcustomer.h"
 #include "productdetailswindow.h"
@@ -182,12 +181,15 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     ui->orderTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     // Connect orderTable double-click to open OrderDetailsWindow
-    connect(ui->orderTable, &QTableView::doubleClicked, this, [this, db](const QModelIndex &index){
+    connect(ui->orderTable, &QTableView::doubleClicked, this, [this](const QModelIndex &index){
+        ui->orderTable->selectRow(index.row()); // Table selection
         QString orderId = orderModel->data(orderModel->index(index.row(), 0)).toString();
-        OrderDetailsWindow *dialog = new OrderDetailsWindow(orderId, db, this);
-        dialog->exec();
-        delete dialog; // Clean up to prevent memory leak
-    }); 
+        OrderEditor editor(orderId, this->db, this);  
+        if (editor.exec() == QDialog::Accepted) {
+            orderModel->select(); 
+            
+        }
+    });
 
     // Connect buttons
     connect(ui->addOrderButton, &QPushButton::clicked, this, &BNTcandles::addOrder);

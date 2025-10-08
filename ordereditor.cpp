@@ -1,6 +1,6 @@
 #include "ordereditor.h"
-#include "ui_ordereditor.h" 
-#include "addorderdetailwindow.h" 
+#include "ui_ordereditor.h"
+#include "addorderdetailwindow.h"
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>
@@ -9,6 +9,49 @@
 #include <QDate>
 #include <QFile>
 #include <QTextStream>
+#include <QSortFilterProxyModel>  // NEW: For proxy model
+
+// NEW: Inner proxy class for displaying product names without changing base model type
+class ProductNameProxy : public QSortFilterProxyModel {
+public:
+    explicit ProductNameProxy(QSqlTableModel *sourceModel, QObject *parent = nullptr)
+        : QSortFilterProxyModel(parent), m_sourceModel(sourceModel), m_db(sourceModel->database()) {
+        setSourceModel(sourceModel);
+    }
+
+    QVariant data(const QModelIndex &proxyIndex, int role = Qt::DisplayRole) const override {
+        if (role == Qt::DisplayRole && proxyIndex.column() == 2) {  // Col 2: detail_id -> product_name
+            int detailId = sourceModel()->data(sourceModel()->index(proxyIndex.row(), 2), Qt::DisplayRole).toInt();
+            if (detailId == 0) return QString("Unknown");
+
+            // Cache check (simple map; for prod, use QCache)
+            static QMap<int, QString> nameCache;
+            if (nameCache.contains(detailId)) {
+                return nameCache[detailId];
+            }
+
+            // Query with JOIN to fetch from product table
+            QSqlQuery query(m_db);
+            query.prepare("SELECT p.product_name FROM product p "
+                          "JOIN product_details pd ON p.product_id = pd.product_ID "
+                          "WHERE pd.detail_id = :id");
+            query.bindValue(":id", detailId);
+            if (query.exec() && query.next()) {
+                QString name = query.value(0).toString();
+                nameCache[detailId] = name;  // Cache
+                return name;
+            } else {
+                qDebug() << "Failed to fetch product name for detail_id" << detailId << ":" << query.lastError().text();
+                return QString("ID: %1").arg(detailId);  // Fallback
+            }
+        }
+        return QSortFilterProxyModel::data(proxyIndex, role);
+    }
+
+private:
+    QSqlTableModel *m_sourceModel;
+    QSqlDatabase m_db;
+};
 
 OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget *parent)
     : QDialog(parent), ui(new Ui::OrderEditor()), orderId(orderId), db(db), isNewOrder(orderId.isEmpty()) {
@@ -21,26 +64,62 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
     populatePaymentCombo();
 
     // Setup items model
-    itemsModel = new QSqlTableModel(this, db);
+    itemsModel = new QSqlTableModel(this, db);  
     itemsModel->setTable("order_items");
     if (!isNewOrder) {
-        itemsModel->setFilter(QString("order_id = '%1'").arg(orderId)); 
-        // Load existing customer for edit
+        itemsModel->setFilter(QString("order_id = '%1'").arg(orderId));  
+        // Load existing for edit - ADDED: payment_method
         QSqlQuery loadQuery(db);
-        loadQuery.prepare("SELECT customer_id, status, order_date FROM orders WHERE order_id = :orderId"); 
+        loadQuery.prepare("SELECT customer_id, status, order_date, payment_method FROM orders WHERE order_id = :orderId");
         loadQuery.bindValue(":orderId", orderId);
+        
+        // Enable buttons for edit (moved outside any conditional)
+        ui->addItemButton->setEnabled(true);
+        ui->addItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
+        ui->editItemButton->setEnabled(true);
+        ui->editItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
+        ui->deleteItemButton->setEnabled(true);
+        ui->deleteItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
+        auto okButton = ui->buttonBox->button(QDialogButtonBox::Ok);
+        auto cancelButton = ui->buttonBox->button(QDialogButtonBox::Cancel);
+        if (okButton) {
+            okButton->setEnabled(true);
+            okButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
+            cancelButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
+        }
+        
         if (loadQuery.exec() && loadQuery.next()) {
             int custId = loadQuery.value("customer_id").toInt();
-            int statusId = loadQuery.value("status").toInt(); 
-            QDate orderDate = loadQuery.value("order_date").toDate(); 
+            QString statusId = loadQuery.value("status").toString();
+            QDate orderDate = loadQuery.value("order_date").toDate();
+            QString paymentMethod = loadQuery.value("payment_method").toString();  // NEW: Load payment
+
             int custIndex = ui->customerCombo->findData(custId);
             if (custIndex >= 0) {
                 ui->customerCombo->setCurrentIndex(custIndex);
+            } else {
+                qDebug() << "Customer ID not found in combo:" << custId;  // DEBUG: Add if needed
             }
-            int statusIndex = ui->statusCombo->findData(statusId); 
+
+            int statusIndex = ui->statusCombo->findText(statusId);
             if (statusIndex >= 0) {
                 ui->statusCombo->setCurrentIndex(statusIndex);
+            } else {
+                
+                qDebug() << "Status ID not found in combo, defaulting to index 0 (Pending):" << statusId;  // DEBUG/WARN
+                ui->statusCombo->setCurrentIndex(-1);  // Or set -1 to blank; but default to Pending as fallback
+                
             }
+
+            // NEW: Set payment
+            int payIndex = ui->paymentCombo->findText(paymentMethod);
+            if (payIndex >= 0) {
+                ui->paymentCombo->setCurrentIndex(payIndex);
+            } else {
+                qDebug() << "Payment method not found in combo, defaulting to index 0 (Card):" << paymentMethod;
+                ui->paymentCombo->setCurrentIndex(0);
+            }
+
             if (ui->dateEdit) {  
                 ui->dateEdit->setDate(orderDate);
             }
@@ -51,7 +130,7 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
     itemsModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
     itemsModel->setHeaderData(0, Qt::Horizontal, "Item ID");
     itemsModel->setHeaderData(1, Qt::Horizontal, "Order ID");
-    itemsModel->setHeaderData(2, Qt::Horizontal, "Detail ID"); 
+    itemsModel->setHeaderData(2, Qt::Horizontal, "Product Name");  // Displays via proxy
     itemsModel->setHeaderData(3, Qt::Horizontal, "Quantity");
     itemsModel->setHeaderData(4, Qt::Horizontal, "Unit Price");
     itemsModel->setHeaderData(5, Qt::Horizontal, "Tax Rate (%)");
@@ -62,10 +141,12 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
         QMessageBox::warning(this, "Data Error", "Failed to load order items: " + itemsModel->lastError().text());
     }
 
-    ui->itemsTable->setModel(itemsModel);
+    // NEW: Wrap with proxy for product name display
+    ProductNameProxy *proxyModel = new ProductNameProxy(itemsModel, this);
+    ui->itemsTable->setModel(proxyModel);  // Use proxy for view
     ui->itemsTable->setColumnHidden(0, true);
     ui->itemsTable->setColumnHidden(1, true);
-    
+    ui->itemsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->itemsTable->horizontalHeader()->setStretchLastSection(true);
     ui->itemsTable->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->itemsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -79,6 +160,11 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
     connect(ui->saveOrderButton, &QPushButton::clicked, this, &OrderEditor::saveOrderDetails);  
 
     if (isNewOrder) {
+        //make combo boxes blank by default
+        ui->customerCombo->setCurrentIndex(-1);
+        ui->statusCombo->setCurrentIndex(-1);
+        ui->paymentCombo->setCurrentIndex(-1);  // NEW: Blank payment too
+        ui->dateEdit->setDate(QDate::currentDate());
         // Disable item management until order is saved
         ui->addItemButton->setEnabled(false);
         ui->addItemButton->setToolTip("Save the order first");
@@ -93,7 +179,6 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);  
         ui->buttonBox->button(QDialogButtonBox::Ok)->setStyleSheet("background-color: #00000079; color: #000000089;");
         ui->buttonBox->button(QDialogButtonBox::Ok)->setToolTip("Save the order header first");
-        // NEW: Leave saveOrderButton enabled for new orders
     }
 }
 
@@ -111,34 +196,29 @@ void OrderEditor::populateCustomerCombo() {
     }
 }
 
-
 void OrderEditor::populateStatusCombo() {
     ui->statusCombo->clear();
-
     QFile file(":/order_statuses.txt");
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        
-        // Fallback statuses
-        ui->statusCombo->addItem("Pending", 1);
-        ui->statusCombo->addItem("Shipped", 2);
-        ui->statusCombo->addItem("Delivered", 3);
-        return;
-    }
-    QTextStream in(&file);
     QStringList statuses;
-    int statusId = 1;
-    while (!in.atEnd()) {
-        QString line = in.readLine().trimmed();  
-        if (!line.isEmpty()) {  
-            statuses.append(line);
-            ui->statusCombo->addItem(line, statusId++);  
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Status file failed; using schema fallback";
+        // Match your ENUM exactly (order matters for consistency, but findText doesn't care)
+        statuses << "Pending" << "Paid" << "Shipped" << "Delivered" << "Cancelled" << "Complete";
+    } else {
+        QTextStream in(&file);
+        while (!in.atEnd()) {
+            QString line = in.readLine().trimmed();
+            if (!line.isEmpty()) {
+                statuses << line;
+            }
         }
+        file.close();
     }
-    file.close();
-   
-    if (isNewOrder) {
-        ui->statusCombo->setCurrentIndex(0);  // Pending
+    // Add as text-only (no data QVariant)
+    foreach (const QString& stat, statuses) {
+        ui->statusCombo->addItem(stat);  // Text = value, no data
     }
+    qDebug() << "Populated" << statuses.size() << "statuses:" << statuses.join(", ");
 }
 
 void OrderEditor::populatePaymentCombo(){
@@ -146,14 +226,10 @@ void OrderEditor::populatePaymentCombo(){
     ui->paymentCombo->addItem("Card");
     ui->paymentCombo->addItem("Venmo");
     ui->paymentCombo->addItem("Cash");
-    if (isNewOrder) {
-        ui->paymentCombo->setCurrentIndex(0);  // Default to first option
-    }
+    // REMOVED: if (isNewOrder) setCurrentIndex(0); - handled in constructor
 }
 
 void OrderEditor::saveOrderDetails() {
-    qDebug() << "=== saveOrderDetails() START ===";
-
     // Validation
     if (ui->customerCombo->currentIndex() < 0) {
         QMessageBox::warning(this, "Validation Error", "Please select a customer.");
@@ -163,21 +239,26 @@ void OrderEditor::saveOrderDetails() {
         QMessageBox::warning(this, "Validation Error", "Please select a status.");
         return;
     }
-
+    if(ui->paymentCombo->currentIndex() < 0){
+        QMessageBox::warning(this,"Validation Error", "Please select a payment method.");
+        return;  // ADDED: return;
+    }
+    if(!ui->dateEdit->date().isValid()){
+        QMessageBox::warning(this,"Validation Error", "Please select a valid date.");
+        return;  // ADDED: return;
+    }
     int custId = ui->customerCombo->currentData().toInt();
-    QString statusText = ui->statusCombo->currentText();  
+    int statusId = ui->statusCombo->currentData().toInt();  
     QDate orderDate = ui->dateEdit->date();
-    QString paymentMethod = ui->paymentCombo->currentText(); 
-    
-
-
+    QString paymentMethod = ui->paymentCombo->currentText();
+   
     QSqlQuery query(db);
     if (isNewOrder) {
-        query.prepare("INSERT INTO orders (customer_ID, order_date, status, payment_method) "
-                      "VALUES (:custId, :orderDate, :status)");
+        query.prepare("INSERT INTO orders (customer_id, order_date, status, payment_method) "  // Fixed: Added payment_method to VALUES; fixed casing to match schema
+                      "VALUES (:custId, :orderDate, :status, :paymentMethod)");
         query.bindValue(":custId", custId);
         query.bindValue(":orderDate", orderDate);
-        query.bindValue(":status", statusText);
+        query.bindValue(":status", statusId);
         query.bindValue(":paymentMethod", paymentMethod);
         if (!query.exec()) {
             QString err = query.lastError().text();
@@ -187,11 +268,9 @@ void OrderEditor::saveOrderDetails() {
         }
         orderId = query.lastInsertId().toString();
         isNewOrder = false;
-
         // Refresh items filter
-        itemsModel->setFilter(QString("order_ID = '%1'").arg(orderId));  // Schema: order_ID
-      
-
+        itemsModel->setFilter(QString("order_id = '%1'").arg(orderId));  // Fixed: Consistent casing
+        itemsModel->select();  // NEW: Refresh after filter
         // Enable controls (as before)
         ui->addItemButton->setEnabled(true);
         ui->addItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
@@ -205,15 +284,15 @@ void OrderEditor::saveOrderDetails() {
         auto okButton = ui->buttonBox->button(QDialogButtonBox::Ok);
         if (okButton) {
             okButton->setEnabled(true);
-            okButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
+            okButton->setStyleSheet("background-color:rgba(255, 134, 215, 0.65); color:hsla(52, 100%, 95%, 1);");
             okButton->setToolTip("");
         }
     } else {
-        query.prepare("UPDATE orders SET customer_ID = :custId, order_date = :orderDate, status = :status, payment_method = :paymentMethod  "
-                      "WHERE order_ID = :orderId");
+        query.prepare("UPDATE orders SET customer_id = :custId, order_date = :orderDate, status = :status, payment_method = :paymentMethod  "  // Fixed: Casing consistency
+                      "WHERE order_id = :orderId");  // Fixed: Casing
         query.bindValue(":custId", custId);
         query.bindValue(":orderDate", orderDate);
-        query.bindValue(":status", statusText);
+        query.bindValue(":status", statusId);
         query.bindValue(":orderId", orderId);
         query.bindValue(":paymentMethod", paymentMethod);
         if (!query.exec()) {
@@ -222,7 +301,6 @@ void OrderEditor::saveOrderDetails() {
             return;
         }
     }
-
 }
 
 void OrderEditor::addItem() {
@@ -230,7 +308,6 @@ void OrderEditor::addItem() {
         QMessageBox::warning(this, "Error", "Please save the order first.");
         return;
     }
-
     AddOrderDetailWindow dialog(db, this);  
     if (dialog.exec() == QDialog::Accepted) {
         QSqlRecord record = itemsModel->record();
@@ -246,7 +323,7 @@ void OrderEditor::addItem() {
             ui->itemsTable->resizeColumnsToContents();
         } else {
             QMessageBox::warning(this, "Error", "Failed to add item: " + itemsModel->lastError().text());
-        }   
+        }  
     }
 }
 
@@ -256,8 +333,10 @@ void OrderEditor::editItem() {
         QMessageBox::warning(this, "Selection Error", "Please select an item to edit.");
         return;
     }
-    int row = selection.first().row();
-    QSqlRecord record = itemsModel->record(row);
+    // Map proxy row to source row
+    QSortFilterProxyModel *proxy = qobject_cast<QSortFilterProxyModel*>(ui->itemsTable->model());
+    int sourceRow = proxy->mapToSource(selection.first()).row();
+    QSqlRecord record = itemsModel->record(sourceRow);
     AddOrderDetailWindow dialog(db, this);
     dialog.setWindowTitle("Edit Order Item");
     dialog.setDetailId(record.value("detail_id").toInt());
@@ -272,7 +351,7 @@ void OrderEditor::editItem() {
         record.setValue("sub_total", dialog.subtotal());
         record.setValue("tax_amount", dialog.taxAmount());
         record.setValue("total", dialog.total());
-        if (itemsModel->setRecord(row, record) && itemsModel->submitAll()) {
+        if (itemsModel->setRecord(sourceRow, record) && itemsModel->submitAll()) {
             ui->itemsTable->resizeColumnsToContents();
         } else {
             QMessageBox::warning(this, "Error", "Failed to update item: " + itemsModel->lastError().text());
@@ -286,9 +365,11 @@ void OrderEditor::deleteItem() {
         QMessageBox::warning(this, "Selection Error", "Please select an item to delete.");
         return;
     }
-    int row = selection.first().row();
+    // Map proxy row to source row
+    QSortFilterProxyModel *proxy = qobject_cast<QSortFilterProxyModel*>(ui->itemsTable->model());
+    int sourceRow = proxy->mapToSource(selection.first()).row();
     if (QMessageBox::question(this, "Confirm Deletion", "Are you sure you want to delete the selected item?") == QMessageBox::Yes) {
-        if (itemsModel->removeRow(row) && itemsModel->submitAll()) {
+        if (itemsModel->removeRow(sourceRow) && itemsModel->submitAll()) {
             ui->itemsTable->resizeColumnsToContents();
         } else {
             QMessageBox::warning(this, "Error", "Failed to delete item: " + itemsModel->lastError().text());

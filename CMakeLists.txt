@@ -46,7 +46,6 @@ set(SOURCES
     addproductdetailswindow.cpp
 
     ordereditor.cpp
-    orderdetailswindow.cpp
     addorderdetailwindow.cpp
     
     expenseeditor.cpp
@@ -68,13 +67,12 @@ set(HEADERS
     addproductdetailswindow.h
 
     ordereditor.h
-    orderdetailswindow.h
     addorderdetailwindow.h
 
     expenseeditor.h
     expenseDetailsWindow.h
     addExpenseDetailWindow.h
-    
+
     reportspage.h
 
     CustomerModel.h
@@ -90,7 +88,6 @@ set(FORMS
     addproductdetailswindow.ui
 
     ordereditor.ui
-    orderdetailswindow.ui
     addorderdetailwindow.ui
 
     expenseeditor.ui
