@@ -18,6 +18,7 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
     //populate combo boxes
     populateStatusCombo();
     populateCustomerCombo();
+    populatePaymentCombo();
 
     // Setup items model
     itemsModel = new QSqlTableModel(this, db);
@@ -114,35 +115,39 @@ void OrderEditor::populateCustomerCombo() {
 void OrderEditor::populateStatusCombo() {
     ui->statusCombo->clear();
 
-    QFile file(":/order_statuses.txt");  // Resource path: :/filename
+    QFile file(":/order_statuses.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Failed to open statuses.txt:" << file.errorString();
-        // Fallback: Minimal hardcode (no file dep)
+        
+        // Fallback statuses
         ui->statusCombo->addItem("Pending", 1);
         ui->statusCombo->addItem("Shipped", 2);
         ui->statusCombo->addItem("Delivered", 3);
-        qDebug() << "Fallback: Added 3 hardcoded items";
         return;
     }
     QTextStream in(&file);
     QStringList statuses;
     int statusId = 1;
     while (!in.atEnd()) {
-        QString line = in.readLine().trimmed();  // Read line, strip whitespace
-        if (!line.isEmpty()) {  // Skip blanks/comments
+        QString line = in.readLine().trimmed();  
+        if (!line.isEmpty()) {  
             statuses.append(line);
-            ui->statusCombo->addItem(line, statusId++);  // Name + ID
+            ui->statusCombo->addItem(line, statusId++);  
         }
     }
     file.close();
-    if (statuses.isEmpty()) {
-        qDebug() << "No statuses from TXT—using fallback";
-        // ... fallback as above
-        return;
-    }
-    // Set default (new order: first; edit: from loadQuery in ctor)
+   
     if (isNewOrder) {
         ui->statusCombo->setCurrentIndex(0);  // Pending
+    }
+}
+
+void OrderEditor::populatePaymentCombo(){
+    ui->paymentCombo->clear();
+    ui->paymentCombo->addItem("Card");
+    ui->paymentCombo->addItem("Venmo");
+    ui->paymentCombo->addItem("Cash");
+    if (isNewOrder) {
+        ui->paymentCombo->setCurrentIndex(0);  // Default to first option
     }
 }
 
@@ -152,29 +157,28 @@ void OrderEditor::saveOrderDetails() {
     // Validation
     if (ui->customerCombo->currentIndex() < 0) {
         QMessageBox::warning(this, "Validation Error", "Please select a customer.");
-        qDebug() << "Validation fail: No customer selected";
         return;
     }
     if (ui->statusCombo->currentIndex() < 0) {
         QMessageBox::warning(this, "Validation Error", "Please select a status.");
-        qDebug() << "Validation fail: No status selected";
         return;
     }
 
     int custId = ui->customerCombo->currentData().toInt();
-    QString statusText = ui->statusCombo->currentText();  // NEW: Bind string for ENUM
-    QDate orderDate = ui->dateEdit->date();  // Assume QDateEdit; defaults to today if null
+    QString statusText = ui->statusCombo->currentText();  
+    QDate orderDate = ui->dateEdit->date();
+    QString paymentMethod = ui->paymentCombo->currentText(); 
+    
 
-    qDebug() << "Saving: CustID=" << custId << ", Status=" << statusText << ", Date=" << orderDate;
 
     QSqlQuery query(db);
     if (isNewOrder) {
-        // INSERT: Only required fields—triggers/defaults handle totals
-        query.prepare("INSERT INTO orders (customer_ID, order_date, status) "
+        query.prepare("INSERT INTO orders (customer_ID, order_date, status, payment_method) "
                       "VALUES (:custId, :orderDate, :status)");
         query.bindValue(":custId", custId);
         query.bindValue(":orderDate", orderDate);
-        query.bindValue(":status", statusText);  // ENUM string bind
+        query.bindValue(":status", statusText);
+        query.bindValue(":paymentMethod", paymentMethod);
         if (!query.exec()) {
             QString err = query.lastError().text();
             qDebug() << "INSERT failed: " << err;
@@ -183,13 +187,10 @@ void OrderEditor::saveOrderDetails() {
         }
         orderId = query.lastInsertId().toString();
         isNewOrder = false;
-        qDebug() << "New order created with ID:" << orderId;
 
         // Refresh items filter
         itemsModel->setFilter(QString("order_ID = '%1'").arg(orderId));  // Schema: order_ID
-        if (!itemsModel->select()) {
-            qDebug() << "Items filter select failed:" << itemsModel->lastError().text();
-        }
+      
 
         // Enable controls (as before)
         ui->addItemButton->setEnabled(true);
@@ -208,22 +209,20 @@ void OrderEditor::saveOrderDetails() {
             okButton->setToolTip("");
         }
     } else {
-        query.prepare("UPDATE orders SET customer_ID = :custId, order_date = :orderDate, status = :status "
+        query.prepare("UPDATE orders SET customer_ID = :custId, order_date = :orderDate, status = :status, payment_method = :paymentMethod  "
                       "WHERE order_ID = :orderId");
         query.bindValue(":custId", custId);
         query.bindValue(":orderDate", orderDate);
         query.bindValue(":status", statusText);
         query.bindValue(":orderId", orderId);
+        query.bindValue(":paymentMethod", paymentMethod);
         if (!query.exec()) {
             QString err = query.lastError().text();
-            qDebug() << "UPDATE failed: " << err;
             QMessageBox::warning(this, "Database Error", "Failed to update order: " + err);
             return;
         }
-        qDebug() << "Order updated: ID=" << orderId;
     }
 
-    qDebug() << "=== saveOrderDetails() END ===";
 }
 
 void OrderEditor::addItem() {

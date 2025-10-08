@@ -26,7 +26,9 @@ private slots:
 private:
     void populateCustomerCombo();
     void populateStatusCombo();
+    void populatePaymentCombo();
     void saveOrderDetails();
+
     
     Ui::OrderEditor *ui;
     QSqlTableModel *itemsModel;

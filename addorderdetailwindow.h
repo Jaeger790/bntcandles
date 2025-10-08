@@ -43,6 +43,14 @@ private slots:
 private:
     Ui::AddOrderDetailWindow *ui;
     QSqlDatabase db;
+
+    // New: Member vars for computed values (since UI fields removed)
+    int m_detailId = 0;
+    double m_unitPrice = 0.0;
+    double m_taxRate = 0.0;
+    double m_subtotal = 0.0;
+    double m_taxAmount = 0.0;
+    double m_total = 0.0;
 };
 
 #endif // ADDORDERDETAILWINDOW_H

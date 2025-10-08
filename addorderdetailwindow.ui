@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>597</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,57 +39,7 @@
      <item row="1" column="1">
       <widget class="QLineEdit" name="quantityEdit"/>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="unitPriceLabel">
-       <property name="text">
-        <string>Unit Price:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="unitPriceEdit"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="taxRateLabel">
-       <property name="text">
-        <string>Tax Rate (%):</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="taxRateEdit"/>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="subtotalLabel">
-       <property name="text">
-        <string>Subtotal:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="subtotalEdit"/>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="taxAmountLabel">
-       <property name="text">
-        <string>Tax Amount:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QLineEdit" name="taxAmountEdit"/>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="totalLabel">
-       <property name="text">
-        <string>Total:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLineEdit" name="totalEdit"/>
-     </item>
-     <item row="7" column="1">
+     <item row="2" column="0" colspan="2">
       <widget class="QTextBrowser" name="textBrowser"/>
      </item>
     </layout>
