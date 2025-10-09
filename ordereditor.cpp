@@ -41,7 +41,6 @@ public:
                 nameCache[detailId] = name;  // Cache
                 return name;
             } else {
-                qDebug() << "Failed to fetch product name for detail_id" << detailId << ":" << query.lastError().text();
                 return QString("ID: %1").arg(detailId);  // Fallback
             }
         }
@@ -98,7 +97,6 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
             if (custIndex >= 0) {
                 ui->customerCombo->setCurrentIndex(custIndex);
             } else {
-                qDebug() << "Customer ID not found in combo:" << custId;
             }
 
             int statusIndex = ui->statusCombo->findText(statusId);
@@ -106,7 +104,6 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
                 ui->statusCombo->setCurrentIndex(statusIndex);
             } else {
                 
-                qDebug() << "Status ID not found in combo, defaulting to index 0 (Pending):" << statusId;  // DEBUG/WARN
                 ui->statusCombo->setCurrentIndex(-1);  
                 
             }
@@ -116,7 +113,6 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
             if (payIndex >= 0) {
                 ui->paymentCombo->setCurrentIndex(payIndex);
             } else {
-                qDebug() << "Payment method not found in combo, defaulting to index 0 (Card):" << paymentMethod;
                 ui->paymentCombo->setCurrentIndex(0);
             }
 
@@ -201,7 +197,6 @@ void OrderEditor::populateStatusCombo() {
     QFile file(":/order_statuses.txt");
     QStringList statuses;
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Status file failed; using schema fallback";
         // Match your ENUM exactly (order matters for consistency, but findText doesn't care)
         statuses << "Pending" << "Paid" << "Shipped" << "Delivered" << "Cancelled" << "Complete";
     } else {
@@ -218,7 +213,6 @@ void OrderEditor::populateStatusCombo() {
     foreach (const QString& stat, statuses) {
         ui->statusCombo->addItem(stat);  // Text = value, no data
     }
-    qDebug() << "Populated" << statuses.size() << "statuses:" << statuses.join(", ");
 }
 
 void OrderEditor::populatePaymentCombo(){
@@ -262,7 +256,6 @@ void OrderEditor::saveOrderDetails() {
         query.bindValue(":paymentMethod", paymentMethod);
         if (!query.exec()) {
             QString err = query.lastError().text();
-            qDebug() << "INSERT failed: " << err;
             QMessageBox::warning(this, "Database Error", "Failed to create order: " + err);
             return;
         }

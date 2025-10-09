@@ -21,7 +21,6 @@ void CustomerModel::configure(){
     setHeaderData(8,Qt::Horizontal,"Zip Code");
     setHeaderData(9,Qt::Horizontal,"Company");
     if(!select()){
-        qDebug() << "Customer model error:" << lastError().text();
         QMessageBox::warning(nullptr, "Data Error", "Failed to load customer data: " + lastError().text());
     }
 }

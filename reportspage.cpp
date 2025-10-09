@@ -14,7 +14,6 @@
 ReportsPage::ReportsPage(const QSqlDatabase &db, QWidget *parent)
     : QWidget(parent), ui(new Ui::ReportsPage), db(db)
 {
-    qDebug() << "ReportsPage: DB open:" << db.isOpen();
     ui->setupUi(this);
     candlePlaceholder = ui->candleChartPlaceholder;
     customerPlaceholder = ui->customerChartPlaceholder;

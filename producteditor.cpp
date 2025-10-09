@@ -153,7 +153,6 @@ void ProductEditor::updateTotalStock() {
     query.prepare("UPDATE product SET stock_qty = (SELECT IFNULL(SUM(stock_qty), 0) FROM product_details WHERE product_ID = :id) WHERE product_ID = :id");
     query.bindValue(":id", productId);
     if (!query.exec()) {
-        qDebug() << "Failed to update stock_qty:" << query.lastError().text();
     }
 }
 */

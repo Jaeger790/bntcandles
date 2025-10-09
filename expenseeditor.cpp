@@ -166,7 +166,6 @@ void ExpenseEditor::saveChanges()
         QMessageBox::warning(this, "DB Error", "Failed to save details: " + itemsModel->lastError().text());
         return;
     }
-    // Update order totals via trigger (already handled in schema)
     qDebug() << "Changes saved for order" << orderId;
 }
 

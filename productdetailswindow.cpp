@@ -21,7 +21,6 @@ ProductDetailsWindow::ProductDetailsWindow(const QString &productId, const QSqlD
         productName = query.value("product_name").toString();
     } else {
         productName = "Unknown Product";
-        qDebug() << "Failed to fetch product name for ID" << productId << ":" << query.lastError().text();
     }
     ui->productIdLabel->setText(QString("%1").arg(productName ));
 
@@ -37,7 +36,6 @@ ProductDetailsWindow::ProductDetailsWindow(const QString &productId, const QSqlD
     productDetailsModel->setHeaderData(4, Qt::Horizontal, "Tax Rate");
     productDetailsModel->setHeaderData(5, Qt::Horizontal, "Stock Quantity");
     if (!productDetailsModel->select()) {
-        qDebug() << "Product details model error:" << productDetailsModel->lastError().text();
         QMessageBox::warning(this, "Data Error", "Failed to load product details: " + productDetailsModel->lastError().text());
     }
 

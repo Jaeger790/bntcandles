@@ -38,7 +38,6 @@ ExpenseDetailsWindow::ExpenseDetailsWindow(const QString &orderId, const QSqlDat
     expenseDetailsModel->setHeaderData(13, Qt::Horizontal, "Tax Rate");
     expenseDetailsModel->setHeaderData(14, Qt::Horizontal, "Notes");
     if (!expenseDetailsModel->select()) {
-        qDebug() << "Expense details model error:" << expenseDetailsModel->lastError().text();
         QMessageBox::warning(this, "Data Error", "Failed to load expense details: " + expenseDetailsModel->lastError().text());
     }
 

@@ -38,7 +38,7 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
         setStyleSheet(stylesheet);
         styleFile.close();
     }else{
-        qDebug() << "Failed to load stylesheet for MainWindow";
+        QMessageBox::warning(this,"Failed to load stylesheet", "Failed to load stylesheet for MainWindow.");
     }
 
 /*      // Production DB credentials
@@ -167,7 +167,6 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     // bool selectSuccess = orderModel->select();
 
     if (!orderModel->select()){
-        qDebug() << "Expense model error:" << orderModel->lastError().text();
         QMessageBox::warning(this, "Data Error", "Failed to load expenses: " + orderModel->lastError().text());
     }
 
@@ -207,7 +206,6 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     expenseModel->setHeaderData(4, Qt::Horizontal, "Company");
 
     if (!expenseModel->select()){
-        qDebug() << "Expense model error:" << expenseModel->lastError().text();
         QMessageBox::warning(this, "Data Error", "Failed to load expenses: " + expenseModel->lastError().text());
     }
 
@@ -223,7 +221,6 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     // Connect expenseTable double-click to open ExpenseDetailsWindow
     connect(ui->expenseTable, &QTableView::doubleClicked, this, [this, db](const QModelIndex &index){
         QString orderId = expenseModel->data(expenseModel->index(index.row(), 0)).toString();
-        qDebug() << "Double-clicked expense order ID: " << orderId;
         ExpenseDetailsWindow *dialog = new ExpenseDetailsWindow(orderId, db, this);
         dialog->exec();
         delete dialog; // Clean up to prevent memory leak
@@ -618,10 +615,8 @@ void BNTcandles::deleteOrder()
 
 void BNTcandles::addExpense()
 {
-    qDebug() << "Opening ExpenseEditor for new expense";
     ExpenseEditor editor("", db, this);  // Empty ID = new
     if (editor.exec() == QDialog::Accepted) {
-        qDebug() << "New expense saved";
         expenseModel->select();  // Refresh expense table
     } else {
         qDebug() << "Add cancelled";
@@ -637,10 +632,8 @@ void BNTcandles::editExpense()
     }
     int row = selection.first().row();
     QString orderId = expenseModel->data(expenseModel->index(row, 0)).toString();  // Col 0 = order_id
-    qDebug() << "Opening ExpenseEditor for edit, orderId:" << orderId;
     ExpenseEditor editor(orderId, db, this);
     if (editor.exec() == QDialog::Accepted) {
-        qDebug() << "Edit saved";
         expenseModel->select();  // Refresh
     } else {
         qDebug() << "Edit cancelled";
@@ -655,7 +648,6 @@ void BNTcandles::deleteExpense(){
     }
     int row = selection.first().row();
     QString orderId = expenseModel->data(expenseModel->index(row, 0)).toString();
-    qDebug() << "Selected order_id for delete:" << orderId;
     // Confirm deletion
     int reply = QMessageBox::question(this, "Confirm Delete", "Are you sure you want to delete this order and all its details?", QMessageBox::Yes | QMessageBox::No);
     if (reply != QMessageBox::Yes)
@@ -664,7 +656,6 @@ void BNTcandles::deleteExpense(){
     query.prepare("DELETE FROM expense_orders WHERE order_id = :orderId");
     query.bindValue(":orderId", orderId);
     if (query.exec()){
-        qDebug() << "Order deleted successfully (details cascaded).";
         expenseModel->select(); // Refresh table
     }else{
         QMessageBox::warning(this, "Database Error", "Failed to delete order: " + query.lastError().text());
