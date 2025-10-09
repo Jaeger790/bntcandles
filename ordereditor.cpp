@@ -98,7 +98,7 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
             if (custIndex >= 0) {
                 ui->customerCombo->setCurrentIndex(custIndex);
             } else {
-                qDebug() << "Customer ID not found in combo:" << custId;  // DEBUG: Add if needed
+                qDebug() << "Customer ID not found in combo:" << custId;
             }
 
             int statusIndex = ui->statusCombo->findText(statusId);
@@ -107,7 +107,7 @@ OrderEditor::OrderEditor(const QString &orderId, const QSqlDatabase &db, QWidget
             } else {
                 
                 qDebug() << "Status ID not found in combo, defaulting to index 0 (Pending):" << statusId;  // DEBUG/WARN
-                ui->statusCombo->setCurrentIndex(-1);  // Or set -1 to blank; but default to Pending as fallback
+                ui->statusCombo->setCurrentIndex(-1);  
                 
             }
 

@@ -10,7 +10,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 COMPONENTS Core Gui Sql Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Core Gui Sql Widgets Charts REQUIRED)
 
 find_library(MYSQL_LIBRARY
     NAMES libmysql mysqlclient
@@ -124,6 +124,7 @@ target_link_libraries(BNTCandles PRIVATE
     Qt6::Gui
     Qt6::Sql
     Qt6::Widgets
+    Qt6::Charts
     ${MYSQL_LIBRARY}
 )
 

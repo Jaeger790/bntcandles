@@ -3,8 +3,21 @@
 
 #include <QWidget>
 #include <QSqlDatabase>
-#include <QSqlQueryModel>  // Keep for now (deprecate later)
-#include <QTextBrowser>    // New: For HTML rendering
+#include <QSqlQueryModel>  // Legacy—remove post-test
+#include <QTextBrowser>
+#include <QVBoxLayout>
+#include <QChartView>
+#include <QBarSeries>
+#include <QBarSet>
+#include <QChart>
+#include <QBarCategoryAxis>
+#include <QValueAxis>
+#include <QLabel>
+#include <QGridLayout>
+#include <QGraphicsDropShadowEffect>
+
+QT_BEGIN_NAMESPACE
+QT_END_NAMESPACE
 
 namespace Ui {
 class ReportsPage;
@@ -23,15 +36,29 @@ public slots:
 
 private:
     void updateTotals();
-    void updateCustomerSpending();
-    void updateCandleSales();
-    void buildFullReportHtml();  // New: Assembles all sections into one doc
+    void updateCustomerSpending();  // Now builds chart data only
+    void updateCandleSales();       // Now builds chart data only
+    void updateDashboard();         // Updates labels from DB
+    void setupDashboard();          // Applies shadows (embedded in UI)
+    void setupCandleSalesChart();
+    void setupCustomerSpendingChart();
 
     Ui::ReportsPage *ui;
     QSqlDatabase db;
-    QSqlQueryModel *customerSpendingModel;  // Legacy—remove post-test
-    QSqlQueryModel *candleSalesModel;       // ^
-    QTextBrowser *reportsBrowser;  // New: Single pane for everything
+    QSqlQueryModel *customerSpendingModel;  // Legacy
+    QSqlQueryModel *candleSalesModel;       // Legacy
+    QChartView *candleSalesChartView;
+    QChartView *customerSpendingChartView;
+    QWidget *candlePlaceholder;
+    QWidget *customerPlaceholder;
+
+    // Dashboard members (access via ui-> in setup/update)
+    QWidget *dashboardWidget;
+    QLabel *totalSoldLabel;
+    QLabel *totalIncomeLabel;
+    QLabel *totalExpensesLabel;
+    QLabel *netProfitLabel;
+    QLabel *dashboardTitle;
 };
 
 #endif // REPORTSPAGE_H

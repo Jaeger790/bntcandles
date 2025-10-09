@@ -46,6 +46,8 @@ QDialog#OrderEditor{
     color:hsla(52, 100%, 95%, 1);
 }
 
+
+
 QDialog#ExpenseEditor{
     background-color: hsla(229, 19%, 22%, 1);
     color:hsla(52, 100%, 95%, 1);
@@ -92,7 +94,7 @@ QTableView {
     color: hsla(52, 100%, 95%, 1);
     selection-background-color: hsla(319, 30%, 16%, 1);
     selection-color:hsla(52, 100%, 95%, 1);
-    font-size: 13px; border-radius: 2px;
+    font-size: 14px; border-radius: 2px;
 }
 
 QTableView::item {
@@ -134,7 +136,7 @@ QLineEdit {
     padding: 5px;
     background-color: hsla(319, 30%, 16%, 1);
     color: hsla(52, 100%, 95%, 1);
-    font-size: 12px;
+    font-size: 14px;
 }
 
 QLineEdit#AdddCustomerWindow {
@@ -143,7 +145,7 @@ QLineEdit#AdddCustomerWindow {
     padding: 5px;
     background-color: hsla(319, 30%, 16%, 1);
     color: hsla(52, 100%, 95%, 1);
-    font-size: 12px;
+    font-size: 14px;
 }
 
 QLineEdit:focus {

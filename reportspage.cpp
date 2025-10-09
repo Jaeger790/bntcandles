@@ -4,44 +4,86 @@
 #include <QString>
 #include <QSqlError>
 #include <QDebug>
-#include <QDateTime>  // For timestamps if needed
+#include <QDateTime>
+#include <QVBoxLayout>
+#include <QGraphicsDropShadowEffect>
+#include <QFont>
+#include <QVector>
+#include <QPainter>  
+
 ReportsPage::ReportsPage(const QSqlDatabase &db, QWidget *parent)
     : QWidget(parent), ui(new Ui::ReportsPage), db(db)
 {
     qDebug() << "ReportsPage: DB open:" << db.isOpen();
     ui->setupUi(this);
-    // Grab browser (from .ui)
-    reportsBrowser = ui->reportsBrowser;
-    if (!reportsBrowser) {
-        qCritical() << "CRITICAL: reportsBrowser null—check .ui!";
-        return;
-    }
-    reportsBrowser->setOpenExternalLinks(false);  // No ext nav needed
-    // Legacy models (stubbed; remove later)
+    candlePlaceholder = ui->candleChartPlaceholder;
+    customerPlaceholder = ui->customerChartPlaceholder;
+
+    // Legacy models 
     customerSpendingModel = new QSqlQueryModel(this);
     candleSalesModel = new QSqlQueryModel(this);
-    refreshReports();  // Initial load
+
+    // Init charts 
+    candleSalesChartView = nullptr;
+    customerSpendingChartView = nullptr;
+
+    // Setup layouts for placeholders
+    auto candleLayout = new QVBoxLayout(candlePlaceholder);
+    candleLayout->setContentsMargins(0, 0, 0, 0);
+    auto customerLayout = new QVBoxLayout(customerPlaceholder);
+    customerLayout->setContentsMargins(0, 0, 0, 0);
+    
+    setupDashboard();
+    refreshReports();  
 }
+
 ReportsPage::~ReportsPage()
 {
     delete ui;
     delete customerSpendingModel;
     delete candleSalesModel;
 }
+
+void ReportsPage::setupDashboard()
+{
+    // Embedded in UI—map original names via ui->
+    dashboardWidget = ui->dashboardWidget;
+    dashboardTitle = ui->dashboardTitle;
+    totalSoldLabel = ui->totalSoldLabel;
+    totalIncomeLabel = ui->totalIncomeLabel;
+    totalExpensesLabel = ui->totalExpensesLabel;
+    netProfitLabel = ui->netProfitLabel;
+
+    // Apply drop shadows to cards
+    auto applyShadow = [this](QWidget *card) {
+        QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
+        effect->setBlurRadius(10);
+        effect->setColor(QColor(255, 255, 255, 78));
+        effect->setOffset(0, 2);
+        card->setGraphicsEffect(effect);
+    };
+    applyShadow(ui->totalSoldCard);
+    applyShadow(ui->totalIncomeCard);
+    applyShadow(ui->totalExpensesCard);
+    applyShadow(ui->netProfitCard);
+}
+
 void ReportsPage::refreshReports()
 {
     updateTotals();
-    updateCustomerSpending();
-    updateCandleSales();
-    buildFullReportHtml();  
+    updateCustomerSpending();  // Prepares data for chart
+    updateCandleSales();       // Prepares data for chart
+    updateDashboard();         // Updates QLabel values
+    setupCandleSalesChart();   // Build and add chart
+    setupCustomerSpendingChart();
 }
+
 void ReportsPage::updateTotals()
 {
     QSqlQuery query(db);
-    // Total Income (unchanged query)
+    // Total Income (unchanged)
     query.exec("SELECT SUM(grand_total) AS total_income FROM orders WHERE status = 'Paid'");
     if (!query.isActive()) {
-        qDebug() << "Total income error:" << query.lastError().text();
     }
     double totalIncome = 0.0;
     if (query.next() && !query.value("total_income").isNull()) {
@@ -50,7 +92,6 @@ void ReportsPage::updateTotals()
     // Total Expenses (unchanged)
     query.exec("SELECT SUM(COALESCE(item_subtotal, 0) + COALESCE(item_tax, 0) + COALESCE(item_shipping, 0) - COALESCE(item_promotion, 0)) AS total_expenses FROM expense_details");
     if (!query.isActive()) {
-        qDebug() << "Total expenses error:" << query.lastError().text();
     }
     double totalExpenses = 0.0;
     if (query.next() && !query.value("total_expenses").isNull()) {
@@ -58,6 +99,7 @@ void ReportsPage::updateTotals()
     }
     double netProfit = totalIncome - totalExpenses;
 }
+
 void ReportsPage::updateCustomerSpending()
 {
     QString queryStr = "SELECT CONCAT(c.first_name, ' ', c.last_name) AS customer_name, "
@@ -65,26 +107,12 @@ void ReportsPage::updateCustomerSpending()
                        "FROM orders o JOIN customer c ON o.customer_ID = c.customer_ID "
                        "WHERE o.status = 'Paid' "
                        "GROUP BY o.customer_ID "
-                       "ORDER BY total_spent DESC";
-    customerSpendingModel->setQuery(queryStr, db);  // Legacy
+                       "ORDER BY total_spent DESC LIMIT 10";  // Limit for chart
+    customerSpendingModel->setQuery(queryStr, db);
     if (customerSpendingModel->lastError().isValid()) {
-        qDebug() << "Customer spending error:" << customerSpendingModel->lastError().text();
     }
-    // New: Build table HTML
-    QString tableHtml = "<table class='report-table'><thead><tr><th>Customer Name</th><th>Total Spent ($)</th></tr></thead><tbody>";
-    int rowCount = 0;
-    QSqlQuery spendQuery(db);  // Fresh query for HTML loop
-    spendQuery.exec(queryStr);
-    while (spendQuery.next()) {
-        QString name = spendQuery.value("customer_name").toString().toHtmlEscaped();
-        double spent = spendQuery.value("total_spent").toDouble();
-        tableHtml += QString("<tr><td>%1</td><td>$%2</td></tr>")
-                        .arg(name).arg(spent, 0, 'f', 2);
-        rowCount++;
-    }
-    tableHtml += "</tbody></table><p class='row-count'>Rows: " + QString::number(rowCount) + "</p>";
-   
 }
+
 void ReportsPage::updateCandleSales()
 {
     QString queryStr = "SELECT p.product_name, SUM(oi.qty) AS quantity_sold "
@@ -94,40 +122,15 @@ void ReportsPage::updateCandleSales()
                        "JOIN orders o ON oi.order_ID = o.order_ID "
                        "WHERE o.status = 'Paid' "
                        "GROUP BY pd.product_ID "
-                       "ORDER BY quantity_sold DESC";
-    candleSalesModel->setQuery(queryStr, db);  // Legacy
+                       "ORDER BY quantity_sold DESC LIMIT 10";  // Limit for chart
+    candleSalesModel->setQuery(queryStr, db);
     if (candleSalesModel->lastError().isValid()) {
-        qDebug() << "Candle sales error:" << candleSalesModel->lastError().text();
     }
-    //Total Candles
-    QSqlQuery totalQuery(db);
-    totalQuery.exec("SELECT SUM(oi.qty) AS total_sold "
-                    "FROM order_items oi "
-                    "JOIN orders o ON oi.order_ID = o.order_ID "
-                    "WHERE o.status = 'Paid'");
-    int totalSold = 0;
-    if (totalQuery.next() && !totalQuery.value("total_sold").isNull()) {
-        totalSold = totalQuery.value("total_sold").toInt();
-    }
-    // Build table HTML
-    QString tableHtml = "<table class='report-table'><thead><tr><th>Product Name</th><th>Quantity Sold</th></tr></thead><tbody>";
-    int rowCount = 0;
-    QSqlQuery salesQuery(db);
-    salesQuery.exec(queryStr);
-    while (salesQuery.next()) {
-        QString name = salesQuery.value("product_name").toString().toHtmlEscaped();
-        int qty = salesQuery.value("quantity_sold").toInt();
-        tableHtml += QString("<tr><td>%1</td><td>%2</td></tr>")
-                        .arg(name).arg(qty);
-        rowCount++;
-    }
-    tableHtml += "</tbody></table><p class='row-count'>Total Candles Sold: " + QString::number(totalSold) + " | Rows: " + QString::number(rowCount) + "</p>";
-    qDebug() << "Candle sales: Loaded" << rowCount << "rows, total sold:" << totalSold;
-    
 }
-//Build full HTML report
-void ReportsPage::buildFullReportHtml() {
-    // Fetch totals 
+
+void ReportsPage::updateDashboard()
+{
+    // Fetch totals
     QSqlQuery totalsQuery(db);
     double totalIncome = 0.0;
     totalsQuery.exec("SELECT SUM(grand_total) AS total_income FROM orders WHERE status = 'Paid'");
@@ -135,227 +138,186 @@ void ReportsPage::buildFullReportHtml() {
     double totalExpenses = 0.0;
     totalsQuery.exec("SELECT SUM(COALESCE(item_subtotal, 0) + COALESCE(item_tax, 0) + COALESCE(item_shipping, 0) - COALESCE(item_promotion, 0)) AS total_expenses FROM expense_details");
     if (totalsQuery.next()) totalExpenses = totalsQuery.value("total_expenses").toDouble();
-   
-    //Profit calc
     double netProfit = totalIncome - totalExpenses;
-    QString profitClass = (netProfit < 0) ? "negative" : "total-value";
-
-    // customer table 
-    QString customerTable = "<table class='report-table'><thead><tr><th>Customer Name</th><th>Total Spent ($)</th></tr></thead><tbody>";
-    QSqlQuery customerQuery(db);
-    customerQuery.exec("SELECT CONCAT(c.first_name, ' ', c.last_name) AS customer_name, "
-                       "SUM(o.grand_total) AS total_spent "
-                       "FROM orders o JOIN customer c ON o.customer_ID = c.customer_ID "
-                       "WHERE o.status = 'Paid' "
-                       "GROUP BY o.customer_ID "
-                       "ORDER BY total_spent DESC");
-    while (customerQuery.next()) {
-        customerTable += QString("<tr><td>%1</td><td>$%2</td></tr>")
-                            .arg(customerQuery.value("customer_name").toString().toHtmlEscaped())
-                            .arg(customerQuery.value("total_spent").toDouble(), 0, 'f', 2);
-    }
-    customerTable += "</tbody></table>";
-
-    //Candle table 
-    QString candleTable = "<table class='report-table'><thead><tr><th>Product Name</th><th>Quantity Sold</th></tr></thead><tbody>";
-    
-    QSqlQuery candleQuery(db);
-    candleQuery.exec("SELECT p.product_name, SUM(oi.qty) AS quantity_sold "
-                     "FROM order_items oi JOIN product_details pd ON oi.detail_ID = pd.detail_ID "
-                     "JOIN product p ON pd.product_ID = p.product_ID "
-                     "JOIN orders o ON oi.order_ID = o.order_ID "
-                     "WHERE o.status = 'Paid' "
-                     "GROUP BY pd.product_ID "
-                     "ORDER BY quantity_sold DESC");
-    while (candleQuery.next()) {
-        candleTable += QString("<tr><td>%1</td><td>%2</td></tr>")
-                          .arg(candleQuery.value("product_name").toString().toHtmlEscaped())
-                          .arg(candleQuery.value("quantity_sold").toInt());
-    }
-    
-    candleTable += "</tbody></table>";
-    
-    
-    // Full doc template
-    QString fullHtml = R"(
-        <html>
-        <head>
-            <style>
-                body {
-                    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-                    margin: 0;
-                    padding: 30px;
-                    color: #ecf0f1;
-                    background: rgba(34, 0, 43, 0.5);;
-                }
-
-                h1 {
-                    text-align: center;
-                    color: #00bcd4;
-                    margin-bottom: 40px;
-                    font-size: 28px;
-                }
-
-                /* Top summary cards */
-             
-                .total-card {
-                    padding:300px;
-                    text-align: center;
-                }
-
-                .card{
-                    border-bottom: 1px solid rgba(255,255,255,0.8);
-                    border-right: 1px solid rgba(255,255,255,0.8);
-                }
-
-                .total-label {
-                      color: #00bcd4;
-                  border-bottom: 1px solid rgba(255,255,255,0.2);
-                  padding-bottom: 8px;
-                  margin-bottom: 15px;
-                  font-size: 20px;
-                }
-
-                .total-value {
-                    font-size: 26px;
-                    font-weight: bold;
-                    color: #fafafaff;
-                }
-
-                .negative {
-                    font-size: 26px;
-                    font-weight: bold;
-                    color: #e74c3c;
-                }
-
-                #expenses{
-                    color: rgba(235, 168, 107, 1);
-                }
-                #income{
-                    color: rgba(51, 248, 255, 1);
-                }
-
-                table.dahsboard {
-                    width: 100%;
-                    border-collapse: collapse;
-                    border-radius: 8px;
-                    overflow: hidden;
-                }
-             
-                table.report-table {
-                    width: 45%;
-                    border-collapse: collapse;
-                    overflow: hidden;
-                    vertical-align: top;
-                    margin: 10px;
-                }
-   
-                td, th {
-                    width: 100%;
-                    padding: 20px;
-                    text-align: left;
-                   
-                }
-
-                td{
-                    font-size: 16px;
-                    border-bottom: 1px solid rgba(255,255,255,0.2);
-                   
-                }
-           
-                .card {     
-                    padding: 20px;
-                    border: 1px solid rgba(255,255,255,0.2);  
-                }
-
-                th {
-                    background: #1b2838;
-                    color: #00bcd4;
-                    text-transform: uppercase;
-                    font-size: 20px;
-                    letter-spacing: 0.5px;
-                }
-           
-            </style>
-        </head>
-        <body>
-            <h1>BNT Candles Dashboard</h1>
-         
-            <table class='dashboard'>
-                <tr>
-                    <td>
-                        <div class="total-card">
-                            <div class="total-label">Total Candles Sold</div>
-                            <div class="total-value">%1</div>
-                        </div>
-                    </td>
-                 
-                    <td>
-                        <div class="total-card">
-                            <div class="total-label">Total Income</div>
-                            <div class="total-value" id="income">$%2</div>
-                        </div>
-                    </td>
-
-                    <td>
-                        <div class="total-card">
-                            <div class="total-label">Total Expenses</div>
-                            <div class="total-value" id="expenses">$%3</div>
-                        </div>
-                    </td>
-
-                    <td>
-                        <div class="total-card">
-                            <div class="total-label">Net Profit</div>
-                            <div class="%6" id="profit">$%7</div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-         
-         
-            <table class='table-grid'>
-                <tr>
-                    <td>
-                        <div class="card">
-                            <h2>Customer Spending</h2>
-                            %4
-                        </div>
-                    </td>
-                    <td>
-                        <div class="card">
-                            <h2>Candle Sales by Product</h2>
-                            %5
-                        </div>
-                    </td>
-                </tr>
-            </table>
-         
-        </body>
-        </html>
-    )";
-
-    // Calc total sold (from earlier query)
+    // Total sold
     QSqlQuery soldQuery(db);
     int totalSold = 0;
-    soldQuery.exec("SELECT SUM(oi.qty) AS total_sold FROM order_items oi JOIN orders o ON oi.order_ID = o.order_ID WHERE o.status = 'Paid'");
+    soldQuery.exec("SELECT SUM(oi.qty) AS total_sold FROM order_items oi JOIN orders o ON oi.order_ID = o.order_ID WHERE o.status = 'Paid'");  //TODO Change to complete and change records to reflect that
     if (soldQuery.next()) totalSold = soldQuery.value("total_sold").toInt();
-    // Inject (order: totalSold, income, expenses, customerTable, candleTable, netProfit)
-    fullHtml = fullHtml.arg(totalSold)
-                       .arg(totalIncome, 0, 'f', 2)
-                       .arg(totalExpenses, 0, 'f', 2)
-                       .arg(customerTable)
-                       .arg(candleTable)
-                       .arg(profitClass)
-                       .arg(netProfit, 0, 'f', 2);
-
-    
-
-    reportsBrowser->setHtml(fullHtml);
-    if (fullHtml.contains("Customer Spending")) {
-        qDebug() << "Report HTML generated successfully.";
+    // Update labels (access via ui->)
+    ui->totalSoldLabel->setText(QString::number(totalSold));
+    ui->totalIncomeLabel->setText(QString("$%1").arg(totalIncome, 0, 'f', 2));
+    ui->totalExpensesLabel->setText(QString("$%1").arg(totalExpenses, 0, 'f', 2));
+    ui->netProfitLabel->setText(QString("$%1").arg(netProfit, 0, 'f', 2));
+    // Dynamic styling for profit (negative = red)
+    if (netProfit < 0) {
+        ui->netProfitLabel->setStyleSheet("font-size: 26px; font-weight: bold; color: #e74c3c; border: 0;");
     } else {
-        reportsBrowser->setHtml("<div class='error'>Report generation error—check DB queries.</div>");
+        ui->netProfitLabel->setStyleSheet("font-size: 26px; font-weight: bold; color: #fafafa; border: 0;");
     }
-    reportsBrowser->viewport()->update(); 
+}
+
+void ReportsPage::setupCandleSalesChart()
+{
+    // Clear existing
+    if (candleSalesChartView) {
+        delete candleSalesChartView;
+    }
+    auto layout = qobject_cast<QVBoxLayout*>(candlePlaceholder->layout());
+    if (layout && candleSalesChartView) {
+        layout->removeWidget(candleSalesChartView);
+    }
+    // Fetch all data upfront (optimized: collect vectors, no placeholders/replaces/appends in loop)
+    while (candleSalesModel->canFetchMore()) {
+        candleSalesModel->fetchMore();
+    }
+    QVector<QString> categories;
+    QVector<int> quantities;
+    for (int i = 0; i < candleSalesModel->rowCount() && i < 10; ++i) {
+        QModelIndex nameIdx = candleSalesModel->index(i, 0);
+        QModelIndex qtyIdx = candleSalesModel->index(i, 1);
+        QString name = candleSalesModel->data(nameIdx).toString();
+        int qty = candleSalesModel->data(qtyIdx).toInt();
+        categories << name;
+        quantities << qty;
+    }
+    if (!categories.isEmpty()) {
+        QBarSeries *series = new QBarSeries();
+        QBarSet *set = new QBarSet("Quantity Sold");
+        // Bulk append (efficient for small N=10)
+        for (int qty : quantities) {
+            *set << qty;
+        }
+        series->append(set);
+        QChart *chart = new QChart();
+        chart->addSeries(series);
+        chart->setTitle("Candle Sales by Product");
+        chart->setAnimationOptions(QChart::SeriesAnimations);
+        QFont titleFont;
+        titleFont.setBold(true);
+        titleFont.setPixelSize(24);
+        chart->setTitleFont(titleFont);
+        chart->setTitleBrush(QBrush(QColor(255,255,255,255)));
+        chart->legend()->setLabelColor(QColor(255,255,255,255));
+        // Set background colors
+        chart->setBackgroundVisible(false);
+        chart->setPlotAreaBackgroundVisible(true);
+        chart->setPlotAreaBackgroundBrush(QBrush(QColor(218, 33, 106,25)));
+        set->setColor(QColor(52,15,100,255));
+        
+
+        QBarCategoryAxis *axisX = new QBarCategoryAxis();
+        // Bulk append categories
+        for (const QString& cat : categories) {
+            axisX->append(cat);
+        }
+        chart->addAxis(axisX, Qt::AlignBottom);
+        series->attachAxis(axisX);
+
+        QValueAxis *axisY = new QValueAxis();
+        axisY->setTitleText("Quantity Sold");
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisY);
+
+        QFont labelsFont;
+        QBrush labelsBrush(Qt::white);
+        labelsFont.setPixelSize(14);
+        axisX->setLabelsBrush(labelsBrush);
+        axisX->setLabelsFont(labelsFont);
+        axisY->setLabelsBrush(labelsBrush);
+        axisY->setLabelsFont(labelsFont);
+
+        axisX->setGridLineVisible(false);
+        axisY->setGridLineVisible(false);
+        axisY->setShadesPen(Qt::NoPen);
+        axisY->setShadesBrush(QBrush(QColor(218,66,156,50)));
+        axisY->setShadesVisible(true);
+
+        candleSalesChartView = new QChartView(chart, this);
+        candleSalesChartView->setRenderHint(QPainter::Antialiasing);
+        layout->addWidget(candleSalesChartView);
+    } else {
+        auto label = new QLabel("No candle sales data available.", this);
+        label->setAlignment(Qt::AlignCenter);
+        layout->addWidget(label);
+    }
+}
+
+void ReportsPage::setupCustomerSpendingChart()
+{
+    // Clear existing
+    if (customerSpendingChartView) {
+        delete customerSpendingChartView;
+    }
+    auto layout = qobject_cast<QVBoxLayout*>(customerPlaceholder->layout());
+    if (layout && customerSpendingChartView) {
+        layout->removeWidget(customerSpendingChartView);
+    }
+    // Fetch all data upfront (optimized: collect vectors, no zero placeholders or replaces)
+    while (customerSpendingModel->canFetchMore()) {
+        customerSpendingModel->fetchMore();
+    }
+    QVector<QString> categories;
+    QVector<double> amounts;
+    for (int i = 0; i < customerSpendingModel->rowCount() && i < 10; ++i) {
+        QModelIndex nameIdx = customerSpendingModel->index(i, 0);
+        QModelIndex spentIdx = customerSpendingModel->index(i, 1);
+        QString name = customerSpendingModel->data(nameIdx).toString();
+        double spent = customerSpendingModel->data(spentIdx).toDouble();
+        categories << name;
+        amounts << spent;
+    }
+    if (!categories.isEmpty()) {
+        QBarSeries *series = new QBarSeries();
+        QBarSet *set = new QBarSet("Total Spent ($)");
+        for (double amt : amounts) {
+            *set << amt;
+        }
+        series->append(set);
+        QChart *chart = new QChart();
+        chart->addSeries(series);
+        chart->setTitle("Customer Spending");
+        chart->setAnimationOptions(QChart::SeriesAnimations);
+        QFont titleFont;
+        titleFont.setBold(true);
+        titleFont.setPixelSize(24);
+        chart->setTitleFont(titleFont);
+        chart->setTitleBrush(QBrush(QColor(255,255,255,255)));
+        chart->legend()->setLabelColor(QColor(255,255,255,255));
+        // Set background colors
+        chart->setBackgroundVisible(false);
+        chart->setPlotAreaBackgroundVisible(true);
+        chart->setPlotAreaBackgroundBrush(QBrush(QColor(218, 33, 106,25)));
+        set->setColor(QColor(52,15,100,255));
+        QBarCategoryAxis *axisX = new QBarCategoryAxis();
+        // Bulk append categories
+        for (const QString& cat : categories) {
+            axisX->append(cat);
+        }
+        chart->addAxis(axisX, Qt::AlignBottom);
+        series->attachAxis(axisX);
+        QValueAxis *axisY = new QValueAxis();
+        axisY->setTitleText("Total Spent ($)");
+        axisY->setTitleBrush(QBrush(QColor(255,255,255,255)));
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisY);
+        QFont labelsFont;
+        QBrush labelsBrush(Qt::white);
+        labelsFont.setPixelSize(14);
+        axisX->setLabelsBrush(labelsBrush);
+        axisX->setLabelsFont(labelsFont);
+        axisY->setLabelsBrush(labelsBrush);
+        axisY->setLabelsFont(labelsFont);
+        axisX->setGridLineVisible(true);
+        axisY->setGridLineVisible(true);
+        axisY->setGridLineColor(QColor(255,255,255,255));
+        customerSpendingChartView = new QChartView(chart, this);
+        customerSpendingChartView->setRenderHint(QPainter::Antialiasing);
+        layout->addWidget(customerSpendingChartView);
+   
+    } else {
+        auto label = new QLabel("No customer spending data available.", this);
+        label->setAlignment(Qt::AlignCenter);
+        layout->addWidget(label);
+    }
 }
