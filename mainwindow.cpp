@@ -233,7 +233,7 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
 
     // Set up reports page
     reportsPage = new ReportsPage(db, this);
-    ui->menuStack->insertWidget(4, reportsPage);
+    ui->menuStack->insertWidget(0, reportsPage);
 
     // Connect navigation buttons to appropriate pages
     connect(ui->customerButton, &QPushButton::clicked, this, &BNTcandles::customerButtonClicked);
@@ -362,72 +362,48 @@ void BNTcandles::deleteCustomer(){
 */
 void BNTcandles::addProduct()
 {
-
     ProductEditor dialog("", db, this); // Empty ID for add
-
     if (dialog.exec() == QDialog::Accepted)
     {
-
         productModel->select();
-
         ui->productTable->resizeColumnsToContents();
     }
 }
 
 void BNTcandles::editProduct()
 {
-
     QModelIndexList selection = ui->productTable->selectionModel()->selectedRows();
-
     if (selection.isEmpty())
     {
-
         QMessageBox::warning(this, "Selection Error", "Please select a product to edit.");
-
         return;
     }
-
     int row = selection.first().row();
-
     QString productId = productModel->data(productModel->index(row, 0)).toString();
-
     ProductEditor dialog(productId, db, this);
-
     if (dialog.exec() == QDialog::Accepted)
     {
-
         productModel->select();
-
         ui->productTable->resizeColumnsToContents();
     }
 }
 
 void BNTcandles::deleteProduct()
 {
-
     QModelIndexList selection = ui->productTable->selectionModel()->selectedRows();
-
     if (selection.isEmpty())
     {
-
         QMessageBox::warning(this, "Selection Error", "Please select a product to delete.");
-
         return;
     }
-
+    
     QMessageBox::StandardButton reply = QMessageBox::question(
-
         this, "Confirm Delete", "Are you sure you want to delete the selected product(s) and all associated details?",
-
         QMessageBox::Yes | QMessageBox::No
-
     );
-
     if (reply == QMessageBox::Yes)
     {
-
         QSqlQuery query;
-
         std::sort(selection.begin(), selection.end(), [](const QModelIndex &a, const QModelIndex &b)
                   {
                       return a.row() > b.row();
@@ -435,70 +411,45 @@ void BNTcandles::deleteProduct()
 
         for (const auto &index : selection)
         {
-
             QString productId = productModel->data(productModel->index(index.row(), 0)).toString();
-
             // Check for Order_Items dependencies
-
             query.prepare("SELECT COUNT(*) FROM product_details pd "
-
                           "JOIN order_items oi ON pd.detail_ID = oi.detail_ID "
-
                           "WHERE pd.product_ID = :productId");
-
             query.bindValue(":productId", productId);
-
             if (!query.exec())
             {
-
                 QMessageBox::warning(this, "Error", "Failed to check dependencies: " + query.lastError().text());
-
                 return;
             }
-
             query.next();
-
             if (query.value(0).toInt() > 0)
             {
-
                 QMessageBox::warning(this, "Error", "Cannot delete product: Associated details are referenced in Order_Items.");
-
                 return;
             }
-
             // Delete Product_Details records
-
             query.prepare("DELETE FROM product_details WHERE product_ID = :productId");
-
             query.bindValue(":productId", productId);
-
             if (!query.exec())
             {
-
                 QMessageBox::warning(this, "Error", "Failed to delete product details: " + query.lastError().text());
-
                 return;
             }
-
             // Delete Product record
-
             if (!productModel->removeRow(index.row()))
             {
-
                 QMessageBox::warning(this, "Error", "Failed to remove product record.");
-
                 return;
             }
         }
 
         if (productModel->submitAll())
         {
-
             ui->productTable->resizeColumnsToContents();
         }
         else
         {
-
             QMessageBox::warning(this, "Error", "Failed to delete product: " + productModel->lastError().text());
         }
     }
@@ -516,7 +467,6 @@ void BNTcandles::addOrder()
 
 void BNTcandles::editOrder(){
     QModelIndexList selection = ui->orderTable->selectionModel()->selectedRows();
-    
     if (selection.isEmpty()){
         QMessageBox::warning(this, "Selection Error", "Please select an order to edit.");
         return;
@@ -536,30 +486,21 @@ void BNTcandles::deleteOrder()
 {
 
     QModelIndexList selection = ui->orderTable->selectionModel()->selectedRows();
-
     if (selection.isEmpty())
     {
-
         QMessageBox::warning(this, "Selection Error", "Please select an order to delete.");
-
         return;
     }
 
     QMessageBox::StandardButton reply = QMessageBox::question(
-
         this, "Confirm Delete", "Are you sure you want to delete the selected order(s)? This will also delete associated order details.",
-
         QMessageBox::Yes | QMessageBox::No
-
     );
 
     if (reply == QMessageBox::Yes)
     {
-
         QSqlQuery query(db);
-
         bool success = true;
-
         std::sort(selection.begin(), selection.end(), [](const QModelIndex &a, const QModelIndex &b)
                   {
                       return a.row() > b.row();
@@ -567,47 +508,29 @@ void BNTcandles::deleteOrder()
 
         for (const auto &index : selection)
         {
-
             int orderId = orderModel->data(orderModel->index(index.row(), 0)).toInt();
-
             // First, delete associated order details
-
             query.prepare("DELETE FROM order_items WHERE order_ID = :orderId");
-
             query.bindValue(":orderId", orderId);
-
             if (!query.exec())
             {
-
                 success = false;
-
                 QMessageBox::warning(this, "Database Error", "Failed to delete order details: " + query.lastError().text());
-
                 break;
             }
-
             // Then, delete the order
-
             query.prepare("DELETE FROM `orders` WHERE order_ID = :orderId");
-
             query.bindValue(":orderId", orderId);
-
             if (!query.exec())
             {
-
                 success = false;
-
                 QMessageBox::warning(this, "Database Error", "Failed to delete order: " + query.lastError().text());
-
                 break;
             }
         }
-
         if (success)
         {
-
             orderModel->select(); // Refresh the table model
-
             ui->orderTable->resizeColumnsToContents();
         }
     }
@@ -662,24 +585,23 @@ void BNTcandles::deleteExpense(){
     }
 }
 
-void BNTcandles::customerButtonClicked(){
+void BNTcandles::reportButtonClicked(){
     ui->menuStack->setCurrentIndex(0);
 }
-
-void BNTcandles::productButtonClicked(){
-    ui->menuStack->setCurrentIndex(1);
-}
-
-void BNTcandles::orderButtonClicked(){
+void BNTcandles::customerButtonClicked(){
     ui->menuStack->setCurrentIndex(2);
 }
 
-void BNTcandles::expenseButtonClicked(){
+void BNTcandles::productButtonClicked(){
     ui->menuStack->setCurrentIndex(3);
 }
 
-void BNTcandles::reportButtonClicked(){
+void BNTcandles::orderButtonClicked(){
     ui->menuStack->setCurrentIndex(4);
+}
+
+void BNTcandles::expenseButtonClicked(){
+    ui->menuStack->setCurrentIndex(5);
 }
 
 BNTcandles::~BNTcandles()
