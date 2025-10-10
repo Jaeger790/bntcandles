@@ -15,6 +15,7 @@ ReportsPage::ReportsPage(const QSqlDatabase &db, QWidget *parent)
     : QWidget(parent), ui(new Ui::ReportsPage), db(db)
 {
     ui->setupUi(this);
+    ui->scrollArea->setFrameShape(QFrame::NoFrame);
     candlePlaceholder = ui->candleChartPlaceholder;
     customerPlaceholder = ui->customerChartPlaceholder;
 
@@ -81,7 +82,7 @@ void ReportsPage::updateTotals()
 {
     QSqlQuery query(db);
     // Total Income (unchanged)
-    query.exec("SELECT SUM(grand_total) AS total_income FROM orders WHERE status = 'Paid'");
+    query.exec("SELECT SUM(grand_total) AS total_income FROM orders WHERE status = 'Complete'");
     if (!query.isActive()) {
     }
     double totalIncome = 0.0;
@@ -104,7 +105,7 @@ void ReportsPage::updateCustomerSpending()
     QString queryStr = "SELECT CONCAT(c.first_name, ' ', c.last_name) AS customer_name, "
                        "SUM(o.grand_total) AS total_spent "
                        "FROM orders o JOIN customer c ON o.customer_ID = c.customer_ID "
-                       "WHERE o.status = 'Paid' "
+                       "WHERE o.status = 'Complete' "
                        "GROUP BY o.customer_ID "
                        "ORDER BY total_spent DESC LIMIT 10";  // Limit for chart
     customerSpendingModel->setQuery(queryStr, db);
@@ -119,7 +120,7 @@ void ReportsPage::updateCandleSales()
                        "JOIN product_details pd ON oi.detail_ID = pd.detail_ID "
                        "JOIN product p ON pd.product_ID = p.product_ID "
                        "JOIN orders o ON oi.order_ID = o.order_ID "
-                       "WHERE o.status = 'Paid' "
+                       "WHERE o.status = 'Complete' "
                        "GROUP BY pd.product_ID "
                        "ORDER BY quantity_sold DESC LIMIT 10";  // Limit for chart
     candleSalesModel->setQuery(queryStr, db);
@@ -132,7 +133,7 @@ void ReportsPage::updateDashboard()
     // Fetch totals
     QSqlQuery totalsQuery(db);
     double totalIncome = 0.0;
-    totalsQuery.exec("SELECT SUM(grand_total) AS total_income FROM orders WHERE status = 'Paid'");
+    totalsQuery.exec("SELECT SUM(grand_total) AS total_income FROM orders WHERE status = 'Complete'");
     if (totalsQuery.next()) totalIncome = totalsQuery.value("total_income").toDouble();
     double totalExpenses = 0.0;
     totalsQuery.exec("SELECT SUM(COALESCE(item_subtotal, 0) + COALESCE(item_tax, 0) + COALESCE(item_shipping, 0) - COALESCE(item_promotion, 0)) AS total_expenses FROM expense_details");
@@ -141,7 +142,7 @@ void ReportsPage::updateDashboard()
     // Total sold
     QSqlQuery soldQuery(db);
     int totalSold = 0;
-    soldQuery.exec("SELECT SUM(oi.qty) AS total_sold FROM order_items oi JOIN orders o ON oi.order_ID = o.order_ID WHERE o.status = 'Paid'");  //TODO Change to complete and change records to reflect that
+    soldQuery.exec("SELECT SUM(oi.qty) AS total_sold FROM order_items oi JOIN orders o ON oi.order_ID = o.order_ID WHERE o.status = 'Complete'"); 
     if (soldQuery.next()) totalSold = soldQuery.value("total_sold").toInt();
     // Update labels (access via ui->)
     ui->totalSoldLabel->setText(QString::number(totalSold));
@@ -166,7 +167,7 @@ void ReportsPage::setupCandleSalesChart()
     if (layout && candleSalesChartView) {
         layout->removeWidget(candleSalesChartView);
     }
-    // Fetch all data upfront (optimized: collect vectors, no placeholders/replaces/appends in loop)
+    // Fetch all data upfront 
     while (candleSalesModel->canFetchMore()) {
         candleSalesModel->fetchMore();
     }
@@ -202,6 +203,7 @@ void ReportsPage::setupCandleSalesChart()
         chart->setBackgroundVisible(false);
         chart->setPlotAreaBackgroundVisible(true);
         chart->setPlotAreaBackgroundBrush(QBrush(QColor(218, 33, 106,25)));
+
         set->setColor(QColor(52,15,100,255));
         
 
@@ -234,6 +236,8 @@ void ReportsPage::setupCandleSalesChart()
 
         candleSalesChartView = new QChartView(chart, this);
         candleSalesChartView->setRenderHint(QPainter::Antialiasing);
+        candleSalesChartView->setMinimumSize(400,600);
+        axisX->setLabelsAngle(-45);
         layout->addWidget(candleSalesChartView);
     } else {
         auto label = new QLabel("No candle sales data available.", this);
@@ -252,7 +256,7 @@ void ReportsPage::setupCustomerSpendingChart()
     if (layout && customerSpendingChartView) {
         layout->removeWidget(customerSpendingChartView);
     }
-    // Fetch all data upfront (optimized: collect vectors, no zero placeholders or replaces)
+    // Fetch all data upfront )
     while (customerSpendingModel->canFetchMore()) {
         customerSpendingModel->fetchMore();
     }
@@ -312,6 +316,8 @@ void ReportsPage::setupCustomerSpendingChart()
         axisY->setGridLineColor(QColor(255,255,255,255));
         customerSpendingChartView = new QChartView(chart, this);
         customerSpendingChartView->setRenderHint(QPainter::Antialiasing);
+        customerSpendingChartView->setMinimumSize(400,600);
+        axisX->setLabelsAngle(-45);
         layout->addWidget(customerSpendingChartView);
    
     } else {

@@ -184,7 +184,7 @@ OrderEditor::~OrderEditor() {
 }
 
 void OrderEditor::populateCustomerCombo() {
-    ui->customerCombo->clear();  // Assume QComboBox *customerCombo in UI
+    ui->customerCombo->clear();  
     QSqlQuery query(db);
     query.exec("SELECT customer_id, CONCAT(first_name, ' ', last_name) AS name FROM customer ORDER BY name");
     while (query.next()) {
@@ -242,7 +242,7 @@ void OrderEditor::saveOrderDetails() {
         return;  // ADDED: return;
     }
     int custId = ui->customerCombo->currentData().toInt();
-    int statusId = ui->statusCombo->currentData().toInt();  
+    QString status = ui->statusCombo->currentText();  
     QDate orderDate = ui->dateEdit->date();
     QString paymentMethod = ui->paymentCombo->currentText();
    
@@ -252,7 +252,7 @@ void OrderEditor::saveOrderDetails() {
                       "VALUES (:custId, :orderDate, :status, :paymentMethod)");
         query.bindValue(":custId", custId);
         query.bindValue(":orderDate", orderDate);
-        query.bindValue(":status", statusId);
+        query.bindValue(":status", status);
         query.bindValue(":paymentMethod", paymentMethod);
         if (!query.exec()) {
             QString err = query.lastError().text();
@@ -267,13 +267,13 @@ void OrderEditor::saveOrderDetails() {
         // Enable controls (as before)
         ui->addItemButton->setEnabled(true);
         ui->addItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
-        ui->addItemButton->setToolTip("");
+        ui->addItemButton->setToolTip("Add order before adding details");
         ui->editItemButton->setEnabled(true);
         ui->editItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
-        ui->editItemButton->setToolTip("");
+        ui->editItemButton->setToolTip("Add order before editing details");
         ui->deleteItemButton->setEnabled(true);
         ui->deleteItemButton->setStyleSheet("background-color:hsla(319, 30%, 16%, .65); color:hsla(52, 100%, 95%, 1);");
-        ui->deleteItemButton->setToolTip("");
+        ui->deleteItemButton->setToolTip("Add order before deleting items.");
         auto okButton = ui->buttonBox->button(QDialogButtonBox::Ok);
         if (okButton) {
             okButton->setEnabled(true);
@@ -285,7 +285,7 @@ void OrderEditor::saveOrderDetails() {
                       "WHERE order_id = :orderId");  // Fixed: Casing
         query.bindValue(":custId", custId);
         query.bindValue(":orderDate", orderDate);
-        query.bindValue(":status", statusId);
+        query.bindValue(":status", status);
         query.bindValue(":orderId", orderId);
         query.bindValue(":paymentMethod", paymentMethod);
         if (!query.exec()) {

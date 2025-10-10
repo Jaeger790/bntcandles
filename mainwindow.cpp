@@ -1,12 +1,11 @@
 /*
  * This calss opens the connection to the database, sets up the models for the tables being fetched from database,
  * connects ui elements from main window, and establishes logic for table manipulation and page navigation.
+    TODO: Seperate pages and functions into seperate classes.  Will be handled like reports/home pagge. 10/09/25   
  */
 #include "mainwindow.h"
-#include "expenseDetailsWindow.h"
 #include "./ui_mainwindow.h"
 #include "addcustomer.h"
-#include "productdetailswindow.h"
 #include "reportspage.h"
 #include "producteditor.h"
 #include "ordereditor.h"
@@ -147,8 +146,8 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
         QString productId = productModel->data(productModel->index(index.row(), 0)).toString();
 
         // Open ProductDetailsWindow
-        ProductDetailsWindow detailsWindow(productId, productModel->database(), this);
-        detailsWindow.exec(); 
+        ProductEditor productEditor(productId, productModel->database(), this);
+        productEditor.exec(); 
     });
 
     // Create order model with join on customer to display custom view
@@ -221,7 +220,7 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     // Connect expenseTable double-click to open ExpenseDetailsWindow
     connect(ui->expenseTable, &QTableView::doubleClicked, this, [this, db](const QModelIndex &index){
         QString orderId = expenseModel->data(expenseModel->index(index.row(), 0)).toString();
-        ExpenseDetailsWindow *dialog = new ExpenseDetailsWindow(orderId, db, this);
+        ExpenseEditor *dialog = new ExpenseEditor(orderId, db, this);
         dialog->exec();
         delete dialog; // Clean up to prevent memory leak
     });

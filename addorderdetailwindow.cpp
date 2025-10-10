@@ -1,5 +1,5 @@
 #include "addorderdetailwindow.h"
-#include "./ui_addOrderDetailWindow.h"
+#include "./ui_addorderdetailwindow.h"
 #include <QIntValidator>
 #include <QDoubleValidator>
 #include <QSqlQuery>
@@ -29,6 +29,7 @@ AddOrderDetailWindow::AddOrderDetailWindow(const QSqlDatabase &db, QWidget *pare
             QString displayText = QString("%1 (%2, $%3)").arg(productName, size, QString::number(price, 'f', 2));
             ui->productCombo->addItem(displayText, detailId);
         }
+        ui->productCombo->setCurrentIndex(-1);
     } else {
         QMessageBox::warning(this, "Error", "Failed to load products: " + query.lastError().text());
     }

@@ -36,20 +36,17 @@ endif()
 
 set(SOURCES
     main.cpp
-
     mainwindow.cpp
 
     addcustomer.cpp
 
     producteditor.cpp
-    productdetailswindow.cpp
     addproductdetailswindow.cpp
 
     ordereditor.cpp
     addorderdetailwindow.cpp
     
     expenseeditor.cpp
-    expenseDetailsWindow.cpp
     addExpenseDetailWindow.cpp
 
     reportspage.cpp
@@ -63,14 +60,12 @@ set(HEADERS
     addcustomer.h
 
     producteditor.h
-    productdetailswindow.h
     addproductdetailswindow.h
 
     ordereditor.h
     addorderdetailwindow.h
 
     expenseeditor.h
-    expenseDetailsWindow.h
     addExpenseDetailWindow.h
 
     reportspage.h
@@ -84,16 +79,13 @@ set(FORMS
     addcustomer.ui
 
     producteditor.ui
-    productdetailswindow.ui
     addproductdetailswindow.ui
 
     ordereditor.ui
     addorderdetailwindow.ui
 
     expenseeditor.ui
-    expenseDetailsWindow.ui
     addExpenseDetailWindow.ui
-
 
     reportspage.ui
  

@@ -27,7 +27,29 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QComboBox" name="productCombo"/>
+      <widget class="QComboBox" name="productCombo">
+        <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+            </sizepolicy>
+            </property>
+            <property name="minimumSize">
+            <size>
+            <width>120</width>  <!-- Keep existing or adjust -->
+            <height>30</height> <!-- Your fixed height -->
+            </size>
+            </property>
+            <property name="maximumSize">
+            <size>
+            <width>16777215</width> <!-- Allow full horizontal expansion -->
+            <height>30</height>     <!-- Matches min for fixed height -->
+            </size>
+            </property>
+            <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+            </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="quantityLabel">

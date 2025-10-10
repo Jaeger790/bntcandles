@@ -13,7 +13,8 @@
   <property name="windowTitle">
    <string>Reports Page</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+
+  <layout class="QVBoxLayout" name="mainLayout">
    <property name="leftMargin">
     <number>10</number>
    </property>
@@ -26,261 +27,273 @@
    <property name="bottomMargin">
     <number>10</number>
    </property>
+
+   <!-- Scroll Area -->
    <item>
-    <widget class="QWidget" name="dashboardWidget">
-     <property name="styleSheet">
-  
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
      </property>
-     <layout class="QGridLayout" name="dashboardGrid">
-      <property name="leftMargin">
-       <number>30</number>
-      </property>
-      <property name="topMargin">
-       <number>10</number>
-      </property>
-      <property name="rightMargin">
-       <number>30</number>
-      </property>
-      <property name="bottomMargin">
-       <number>10</number>
-      </property>
-      <property name="spacing">
-       <number>10</number>
-      </property>
-      <item row="0" column="0" colspan="4">
-       <widget class="QLabel" name="dashboardTitle">
-        <property name="text">
-         <string>BNT Candles</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color: #ffffff; background-color: #000003d7; font-size: 36px; font-weight: bold; border: none; white-space: normal; min-width: 120px; margin-bottom:20px;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QWidget" name="totalSoldCard">
-        <property name="styleSheet">
-         <string notr="true">background-color: hsla(320, 29%, 16%, 1); border: 1px solid rgba(125, 125, 125, 1); border-radius: 5px;</string>
-        </property>
-        <layout class="QVBoxLayout" name="totalSoldLayout">
-         <property name="leftMargin">
-          <number>50</number>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <layout class="QVBoxLayout" name="scrollLayout">
+       <property name="spacing">
+        <number>15</number>
+       </property>
+
+       <!-- Dashboard Cards Section -->
+       <item>
+        <widget class="QWidget" name="dashboardWidget">
+         <layout class="QGridLayout" name="dashboardGrid">
+          <property name="leftMargin">
+           <number>30</number>
+          </property>
+          <property name="topMargin">
+           <number>10</number>
+          </property>
+          <property name="rightMargin">
+           <number>30</number>
+          </property>
+          <property name="bottomMargin">
+           <number>10</number>
+          </property>
+          <property name="spacing">
+           <number>10</number>
+          </property>
+
+          <!-- Title -->
+          <item row="0" column="0" colspan="4">
+           <widget class="QLabel" name="dashboardTitle">
+            <property name="text">
+             <string>BNT Candles</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: #ffffff; background-color: #000003d7; font-size: 36px; font-weight: bold; border: none; white-space: normal; margin-bottom:20px;</string>
+            </property>
+           </widget>
+          </item>
+
+          <!-- Total Sold Card -->
+          <item row="1" column="0">
+           <widget class="QWidget" name="totalSoldCard">
+            <property name="styleSheet">
+             <string notr="true">background-color: hsla(320, 29%, 16%, 1); border: 1px solid rgba(125, 125, 125, 1); border-radius: 5px;</string>
+            </property>
+            <layout class="QVBoxLayout" name="totalSoldLayout">
+             <property name="leftMargin">
+              <number>50</number>
+             </property>
+             <property name="topMargin">
+              <number>50</number>
+             </property>
+             <property name="rightMargin">
+              <number>50</number>
+             </property>
+             <property name="bottomMargin">
+              <number>50</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="totalSoldLabelTitle">
+               <property name="text">
+                <string>Total Candles Sold</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #00bcd4; font-size: 20px; border: none;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="totalSoldLabel">
+               <property name="text">
+                <string>0</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">font-size: 26px; font-weight: bold; color: #fafafa; border: none;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <!-- Total Income Card -->
+          <item row="1" column="1">
+           <widget class="QWidget" name="totalIncomeCard">
+            <property name="styleSheet">
+             <string notr="true">background-color: hsla(320, 29%, 16%, 1); border: 1px solid rgba(125,125,125, 1); border-radius: 5px;</string>
+            </property>
+            <layout class="QVBoxLayout" name="totalIncomeLayout">
+             <property name="leftMargin">
+              <number>50</number>
+             </property>
+             <property name="topMargin">
+              <number>50</number>
+             </property>
+             <property name="rightMargin">
+              <number>50</number>
+             </property>
+             <property name="bottomMargin">
+              <number>50</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="totalIncomeLabelTitle">
+               <property name="text">
+                <string>Total Income</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #00bcd4; font-size: 20px; border: none;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="totalIncomeLabel">
+               <property name="text">
+                <string>$0.00</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">font-size: 26px; font-weight: bold; color: rgba(51, 248, 255, 1); border: none;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <!-- Total Expenses Card -->
+          <item row="1" column="2">
+           <widget class="QWidget" name="totalExpensesCard">
+            <property name="styleSheet">
+             <string notr="true">background-color: hsla(320, 29%, 16%, 1); border: 1px solid rgba(125,125,125, 1); border-radius: 5px;</string>
+            </property>
+            <layout class="QVBoxLayout" name="totalExpensesLayout">
+             <property name="leftMargin">
+              <number>50</number>
+             </property>
+             <property name="topMargin">
+              <number>50</number>
+             </property>
+             <property name="rightMargin">
+              <number>50</number>
+             </property>
+             <property name="bottomMargin">
+              <number>50</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="totalExpensesLabelTitle">
+               <property name="text">
+                <string>Total Expenses</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #00bcd4; font-size: 20px; border: none;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="totalExpensesLabel">
+               <property name="text">
+                <string>$0.00</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">font-size: 26px; font-weight: bold; color: rgba(235, 168, 107, 1); border: none;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+
+          <!-- Net Profit Card -->
+          <item row="1" column="3">
+           <widget class="QWidget" name="netProfitCard">
+            <property name="styleSheet">
+             <string notr="true">background-color: hsla(320, 29%, 16%, 1); border: 1px solid rgba(125,125,125, 1); border-radius: 5px;</string>
+            </property>
+            <layout class="QVBoxLayout" name="netProfitLayout">
+             <property name="leftMargin">
+              <number>50</number>
+             </property>
+             <property name="topMargin">
+              <number>50</number>
+             </property>
+             <property name="rightMargin">
+              <number>50</number>
+             </property>
+             <property name="bottomMargin">
+              <number>50</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="netProfitLabelTitle">
+               <property name="text">
+                <string>Net Profit</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: #00bcd4; font-size: 20px; border: none;</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="netProfitLabel">
+               <property name="text">
+                <string>$0.00</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">font-size: 26px; font-weight: bold; color: #fafafa; border: none;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+
+       <!-- Candle Chart -->
+       <item>
+        <widget class="QWidget" name="candleChartPlaceholder">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred"/>
          </property>
-         <property name="topMargin">
-          <number>50</number>
+        </widget>
+       </item>
+
+       <!-- Customer Chart -->
+       <item>
+        <widget class="QWidget" name="customerChartPlaceholder">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred"/>
          </property>
-         <property name="rightMargin">
-          <number>50</number>
-         </property>
-         <property name="bottomMargin">
-          <number>50</number>
-         </property>
-         <property name="spacing">
-          <number>8</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="totalSoldLabelTitle">
-           <property name="text">
-            <string>Total Candles Sold</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">color: #00bcd4; font-size: 20px; border: none; white-space: normal; min-width: 120px;</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="totalSoldLabel">
-           <property name="text">
-            <string>0</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">font-size: 26px; font-weight: bold; color: #fafafa; border: none; white-space: normal; min-width: 120px;</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QWidget" name="totalIncomeCard">
-        <property name="styleSheet">
-         <string notr="true">background-color: hsla(320, 29%, 16%, 1); border: 1px solid rgba(125,125,125, 1); border-radius: 5px;</string>
-        </property>
-        <layout class="QVBoxLayout" name="totalIncomeLayout">
-         <property name="leftMargin">
-          <number>50</number>
-         </property>
-         <property name="topMargin">
-          <number>50</number>
-         </property>
-         <property name="rightMargin">
-          <number>50</number>
-         </property>
-         <property name="bottomMargin">
-          <number>50</number>
-         </property>
-         <property name="spacing">
-          <number>8</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="totalIncomeLabelTitle">
-           <property name="text">
-            <string>Total Income</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">color: #00bcd4; font-size: 20px; border: none; white-space: normal; min-width: 120px;</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="totalIncomeLabel">
-           <property name="text">
-            <string>$0.00</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">font-size: 26px; font-weight: bold; color: rgba(51, 248, 255, 1); border: none; white-space: normal; min-width: 120px;</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QWidget" name="totalExpensesCard">
-        <property name="styleSheet">
-         <string notr="true">background-color: hsla(320, 29%, 16%, 1); border: 1px solid rgba(125,125,125, 1); border-radius: 5px;</string>
-        </property>
-        <layout class="QVBoxLayout" name="totalExpensesLayout">
-         <property name="leftMargin">
-          <number>50</number>
-         </property>
-         <property name="topMargin">
-          <number>50</number>
-         </property>
-         <property name="rightMargin">
-          <number>50</number>
-         </property>
-         <property name="bottomMargin">
-          <number>50</number>
-         </property>
-         <property name="spacing">
-          <number>8</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="totalExpensesLabelTitle">
-           <property name="text">
-            <string>Total Expenses</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">color: #00bcd4; font-size: 20px; border: none; white-space: normal; min-width: 120px;</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="totalExpensesLabel">
-           <property name="text">
-            <string>$0.00</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">font-size: 26px; font-weight: bold; color: rgba(235, 168, 107, 1); border: none; white-space: normal; min-width: 120px;</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QWidget" name="netProfitCard">
-        <property name="styleSheet">
-         <string notr="true">background-color: hsla(320, 29%, 16%, 1); border: 1px solid rgba(125,125,125, 1); border-radius: 5px;</string>
-        </property>
-        <layout class="QVBoxLayout" name="netProfitLayout">
-         <property name="leftMargin">
-          <number>50</number>
-         </property>
-         <property name="topMargin">
-          <number>50</number>
-         </property>
-         <property name="rightMargin">
-          <number>50</number>
-         </property>
-         <property name="bottomMargin">
-          <number>50</number>
-         </property>
-         <property name="spacing">
-          <number>8</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="netProfitLabelTitle">
-           <property name="text">
-            <string>Net Profit</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">color: #00bcd4; font-size: 20px; border: none; white-space: normal; min-width: 120px;</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="netProfitLabel">
-           <property name="text">
-            <string>$0.00</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">font-size: 26px; font-weight: bold; color: #fafafa; border: none; white-space: normal; min-width: 120px;</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QWidget" name="candleChartPlaceholder">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QWidget" name="customerChartPlaceholder">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+        </widget>
+       </item>
+
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
