@@ -1,9 +1,0 @@
-import { createApp } from "/node_modules/.vite/deps/vue.js?v=f260e116";
-import "/src/style.css";
-import App from "/src/App.vue";
-import router from "/src/router/index.ts";
-const app = createApp(App);
-app.use(router);
-app.mount("#app");
-
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4udHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgY3JlYXRlQXBwIH0gZnJvbSAndnVlJ1xuaW1wb3J0ICcuL3N0eWxlLmNzcydcbmltcG9ydCBBcHAgZnJvbSAnLi9BcHAudnVlJ1xuaW1wb3J0IHJvdXRlciBmcm9tICcuL3JvdXRlcic7XG5cbmNvbnN0IGFwcCA9IGNyZWF0ZUFwcChBcHApO1xuYXBwLnVzZShyb3V0ZXIpO1xuYXBwLm1vdW50KCcjYXBwJyk7XG4iXSwibWFwcGluZ3MiOiJBQUFBLFNBQVMsaUJBQWlCO0FBQzFCLE9BQU87QUFDUCxPQUFPLFNBQVM7QUFDaEIsT0FBTyxZQUFZO0FBRW5CLE1BQU0sTUFBTSxVQUFVLEdBQUc7QUFDekIsSUFBSSxJQUFJLE1BQU07QUFDZCxJQUFJLE1BQU0sTUFBTTsiLCJuYW1lcyI6W119
