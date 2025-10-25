@@ -72,6 +72,9 @@ Thumbs.db
 
 *.ini
 
+*.vscode
+
+*.gitignore
 
 
 # qtcreator generated files
