@@ -1,6 +1,6 @@
-#include "ordereditor.h"
-#include "ui_ordereditor.h"
-#include "addorderdetailwindow.h"
+#include "../headers/ordereditor.h"
+#include "../ui/ui_ordereditor.h"
+#include "../headers/addorderdetailwindow.h"
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>

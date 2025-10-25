@@ -1,5 +1,5 @@
-#include "addproductdetailswindow.h"
-#include "ui_addproductdetailswindow.h"
+#include "../headers/addproductdetailswindow.h"
+#include "../ui/ui_addproductdetailswindow.h"
 #include <QDoubleValidator>
 #include <QIntValidator>
 

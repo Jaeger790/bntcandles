@@ -36,69 +36,69 @@ endif()
 
 set(SOURCES
     main.cpp
-    mainwindow.cpp
+    cpp/mainwindow.cpp
 
-    addcustomer.cpp
+    cpp/addcustomer.cpp
 
-    producteditor.cpp
-    addproductdetailswindow.cpp
+    cpp/producteditor.cpp
+    cpp/addproductdetailswindow.cpp
 
-    ordereditor.cpp
-    addorderdetailwindow.cpp
+    cpp/ordereditor.cpp
+    cpp/addorderdetailwindow.cpp
     
-    expenseeditor.cpp
-    addExpenseDetailWindow.cpp
+    cpp/expenseeditor.cpp
+    cpp/addExpenseDetailWindow.cpp
 
-    reportspage.cpp
+    cpp/reportspage.cpp
     
-    CustomerModel.cpp
+    cpp/CustomerModel.cpp
 )
 
 set(HEADERS
-    mainwindow.h
+    headers/mainwindow.h
 
-    addcustomer.h
+    headers/addcustomer.h
 
-    producteditor.h
-    addproductdetailswindow.h
+    headers/producteditor.h
+    headers/addproductdetailswindow.h
 
-    ordereditor.h
-    addorderdetailwindow.h
+    headers/ordereditor.h
+    headers/addorderdetailwindow.h
 
-    expenseeditor.h
-    addExpenseDetailWindow.h
+    headers/expenseeditor.h
+    headers/addExpenseDetailWindow.h
 
-    reportspage.h
+    headers/reportspage.h
 
-    CustomerModel.h
+    headers/CustomerModel.h
 )
 
 set(FORMS
-    mainwindow.ui
+    ui/mainwindow.ui
 
-    addcustomer.ui
+    ui/addcustomer.ui
 
-    producteditor.ui
-    addproductdetailswindow.ui
+    ui/producteditor.ui
+    ui/addproductdetailswindow.ui
 
-    ordereditor.ui
-    addorderdetailwindow.ui
+    ui/ordereditor.ui
+    ui/addorderdetailwindow.ui
 
-    expenseeditor.ui
-    addExpenseDetailWindow.ui
+    ui/expenseeditor.ui
+    ui/addExpenseDetailWindow.ui
 
-    reportspage.ui
+    ui/reportspage.ui
  
     
 )
 
 set(RESOURCES
-    resources.qrc
+    assets/resources.qrc
     
-    db_cred.ini
-    taxRates.txt
-    states
-    bnt_icon.jpg
+    assets/db_cred.ini
+    assets/taxRates.txt
+    assets/states
+    assets/bnt_icon.jpg
 )
 
 add_executable(BNTCandles 

@@ -1,5 +1,5 @@
-#include "addorderdetailwindow.h"
-#include "./ui_addorderdetailwindow.h"
+#include "../headers/addorderdetailwindow.h"
+#include "../ui/ui_addorderdetailwindow.h"
 #include <QIntValidator>
 #include <QDoubleValidator>
 #include <QSqlQuery>

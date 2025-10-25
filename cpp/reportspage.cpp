@@ -1,5 +1,5 @@
-#include "reportspage.h"
-#include "ui_reportspage.h"
+#include "../headers/reportspage.h"
+#include "../ui/ui_reportspage.h"
 #include <QSqlQuery>
 #include <QString>
 #include <QSqlError>

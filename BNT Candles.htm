@@ -1,0 +1,111 @@
+// src/composables/useGlobalScrollAnimations.ts
+import { ref, onMounted, onUnmounted, Ref, nextTick } from 'vue';
+
+interface SectionConfig {
+  ref: Ref<HTMLElement | null>;
+  index: number;
+  totalSections: number;
+}
+
+interface ScrollAnimationReturn {
+  requestTick: () => void;
+}
+
+const SCROLL_SENSITIVITY = 25; // Reduced for snappier upward response
+const SLIDE_DURATION = 500; // Shortened lock to 500ms for quicker back-scroll
+const THROTTLE_DELAY = 50; // Tightened to 50ms for fluid direction changes
+
+export function useGlobalScrollAnimations(sections: SectionConfig[]): ScrollAnimationReturn {
+  let ticking = false;
+  let lockTimeout: number | null = null;
+  let currentSlideNumber = 0;
+  const totalSlideNumber = sections.length;
+  let throttleTimeout: number | null = null;
+
+  const nextItem = () => {
+    if (currentSlideNumber < totalSlideNumber - 1) {
+      const previousSection = sections[currentSlideNumber].ref.value;
+      if (previousSection) {
+        previousSection.classList.remove('up-scroll');
+        previousSection.classList.add('down-scroll');
+      }
+      currentSlideNumber++;
+    }
+  };
+
+  const previousItem = () => {
+    if (currentSlideNumber > 0) {
+      const currentSection = sections[currentSlideNumber].ref.value;
+      if (currentSection) {
+        currentSection.classList.remove('down-scroll');
+        currentSection.classList.add('up-scroll');
+      }
+      currentSlideNumber--;
+    }
+  };
+
+  const slideDurationTimeout = () => {
+    if (lockTimeout) clearTimeout(lockTimeout);
+    lockTimeout = window.setTimeout(() => {
+      ticking = false;
+    }, SLIDE_DURATION);
+  };
+
+  const handleWheel = (evt: WheelEvent) => {
+    if (ticking) {
+      evt.preventDefault(); // Prevent native scroll during lock
+      return;
+    }
+
+    const delta = evt.deltaY;
+
+    if (!throttleTimeout) {
+      throttleTimeout = window.setTimeout(() => {
+        throttleTimeout = null;
+      }, THROTTLE_DELAY);
+    } else {
+      return;
+    }
+
+    ticking = true;
+    evt.preventDefault(); // Lock wheel during throttle
+    if (delta > SCROLL_SENSITIVITY) {
+      if (currentSlideNumber !== totalSlideNumber - 1) {
+        nextItem();
+        slideDurationTimeout();
+      }
+    } else if (delta < -SCROLL_SENSITIVITY) {
+      if (currentSlideNumber !== 0) {
+        previousItem();
+        slideDurationTimeout();
+      }
+    }
+  };
+
+  const requestTick = () => {
+    sections.forEach((section) => {
+      const el = section.ref.value;
+      if (!el) return;
+      el.classList.remove('up-scroll', 'down-scroll');
+    });
+    currentSlideNumber = 0;
+    nextTick(() => {
+      if (sections[0].ref.value) {
+        sections[0].ref.value.style.opacity = '1';
+      }
+    });
+  };
+
+  onMounted(() => {
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    requestTick();
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener('wheel', handleWheel);
+    if (lockTimeout) clearTimeout(lockTimeout);
+    if (throttleTimeout) clearTimeout(throttleTimeout);
+  });
+
+  return { requestTick };
+}

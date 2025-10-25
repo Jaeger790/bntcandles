@@ -1,11 +1,11 @@
-#include "addExpenseDetailWindow.h"
+#include "../headers/addExpenseDetailWindow.h"
 #include <QDialog>
 #include <QIntValidator>
 #include <QDoubleValidator>
 #include <QDate>
 #include <QFile>
 #include <QTextStream>
-#include "./ui_addExpenseDetailWindow.h"
+#include "../ui/ui_addExpenseDetailWindow.h"
 
 AddExpenseDetailWindow::AddExpenseDetailWindow(QWidget *parent): QDialog(parent), ui(new Ui::AddExpenseDetailWindow)
 {

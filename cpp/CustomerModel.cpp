@@ -1,4 +1,4 @@
-#include "CustomerModel.h"
+#include "../headers/CustomerModel.h"
 #include <QMessageBox>
 #include <QDebug>
 #include <QSqlError>

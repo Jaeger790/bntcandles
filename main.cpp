@@ -4,7 +4,7 @@
  *
 */
 
-#include "mainwindow.h"
+#include "../headers/mainwindow.h"
 #include <QFile>
 #include <QTextStream>
 #include <QApplication>

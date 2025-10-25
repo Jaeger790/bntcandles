@@ -1,6 +1,6 @@
-#include "producteditor.h"
-#include "ui_producteditor.h"
-#include "addproductdetailswindow.h"
+#include "../headers/producteditor.h"
+#include "../ui/ui_producteditor.h"
+#include "../headers/addproductdetailswindow.h"
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>

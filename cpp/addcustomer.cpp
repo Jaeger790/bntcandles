@@ -1,5 +1,5 @@
-#include "addcustomer.h"
-#include "ui_addcustomer.h"
+#include "../headers/addcustomer.h"
+#include "../ui/ui_addcustomer.h"
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>

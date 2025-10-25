@@ -3,13 +3,13 @@
  * connects ui elements from main window, and establishes logic for table manipulation and page navigation.
     TODO: Seperate pages and functions into seperate classes.  Will be handled like reports/home pagge. 10/09/25   
  */
-#include "mainwindow.h"
-#include "./ui_mainwindow.h"
-#include "addcustomer.h"
-#include "reportspage.h"
-#include "producteditor.h"
-#include "ordereditor.h"
-#include "expenseeditor.h"
+#include "../headers/mainwindow.h"        
+#include "../ui/ui_mainwindow.h"
+#include "../headers/addcustomer.h"
+#include "../headers/reportspage.h"
+#include "../headers/producteditor.h"
+#include "../headers/ordereditor.h"
+#include "../headers/expenseeditor.h"
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlTableModel>
@@ -118,6 +118,7 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     productModel->setTable("product");
     productModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
     productModel->setHeaderData(1, Qt::Horizontal, "Product Name");
+    productModel->setHeaderData(2, Qt::Horizontal, "Description");
     productModel->setHeaderData(2, Qt::Horizontal, "Total Stock");
 
     if (!productModel->select()){
