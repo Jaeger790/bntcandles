@@ -10,10 +10,10 @@
 #include "../headers/producteditor.h"
 #include "../headers/ordereditor.h"
 #include "../headers/expenseeditor.h"
-#include <QtSql/QSqlError>
-#include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlTableModel>
-#include <QtSql/QSqlQueryModel>
+#include <QSqlError>
+#include <QSqlDatabase>
+#include <QSqlTableModel>
+#include <QSqlQueryModel>
 #include <QSqlRecord>
 #include <QMessageBox>
 #include <QDebug>
@@ -66,7 +66,7 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     QString password = settings.value("test_db/password").toString(); 
 
     // Set up database connection
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+    db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName(host);
     db.setPort(port);
     db.setDatabaseName(dbName);
@@ -219,9 +219,9 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     ui->expenseTable->horizontalHeader()->setStretchLastSection(false);
 
     // Connect expenseTable double-click to open ExpenseDetailsWindow
-    connect(ui->expenseTable, &QTableView::doubleClicked, this, [this, db](const QModelIndex &index){
+    connect(ui->expenseTable, &QTableView::doubleClicked, this, [this](const QModelIndex &index){
         QString orderId = expenseModel->data(expenseModel->index(index.row(), 0)).toString();
-        ExpenseEditor *dialog = new ExpenseEditor(orderId, db, this);
+        ExpenseEditor *dialog = new ExpenseEditor(orderId, this->db, this);
         dialog->exec();
         delete dialog; // Clean up to prevent memory leak
     });

@@ -1,16 +1,13 @@
-// expenseeditor.h
 #ifndef EXPENSEEDITOR_H
 #define EXPENSEEDITOR_H
 
 #include <QDialog>
 #include <QSqlDatabase>
 #include <QSqlTableModel>
-#include <QDate>
-#include <QSqlQuery>
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class ExpenseEditor; }
-QT_END_NAMESPACE
+namespace Ui {
+class ExpenseEditor;
+}
 
 class AddExpenseDetailWindow;
 
@@ -23,9 +20,7 @@ public:
     ~ExpenseEditor();
 
 private slots:
-    void populateCategoryCombo();
     void saveOrderInfo();
-    void saveChanges();
     void addItem();
     void editItem();
     void deleteItem();
@@ -38,7 +33,10 @@ private:
     QSqlDatabase db;
     bool isNewOrder;
 
+    void populateCategoryCombo();
+    void populatePaymentMethodCombo();  // New: For order-level payment
     void loadOrderInfo();
+    void saveChanges();
     void addDetail();
     void editDetail();
     void deleteDetail();

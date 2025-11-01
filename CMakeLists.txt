@@ -47,7 +47,7 @@ set(SOURCES
     cpp/addorderdetailwindow.cpp
     
     cpp/expenseeditor.cpp
-    cpp/addExpenseDetailWindow.cpp
+    cpp/addexpensedetailwindow.cpp
 
     cpp/reportspage.cpp
     
@@ -66,7 +66,7 @@ set(HEADERS
     headers/addorderdetailwindow.h
 
     headers/expenseeditor.h
-    headers/addExpenseDetailWindow.h
+    headers/addexpensedetailwindow.h
 
     headers/reportspage.h
 
@@ -85,7 +85,7 @@ set(FORMS
     ui/addorderdetailwindow.ui
 
     ui/expenseeditor.ui
-    ui/addExpenseDetailWindow.ui
+    ui/addexpensedetailwindow.ui
 
     ui/reportspage.ui
  

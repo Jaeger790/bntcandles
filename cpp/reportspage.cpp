@@ -228,11 +228,10 @@ void ReportsPage::setupCandleSalesChart()
         axisY->setLabelsBrush(labelsBrush);
         axisY->setLabelsFont(labelsFont);
 
-        axisX->setGridLineVisible(false);
-        axisY->setGridLineVisible(false);
+        axisY->setGridLineVisible(true);
         axisY->setShadesPen(Qt::NoPen);
         axisY->setShadesBrush(QBrush(QColor(218,66,156,50)));
-        axisY->setShadesVisible(true);
+        axisY->setShadesVisible(false);
 
         candleSalesChartView = new QChartView(chart, this);
         candleSalesChartView->setRenderHint(QPainter::Antialiasing);
