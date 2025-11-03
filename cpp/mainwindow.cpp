@@ -38,6 +38,21 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
         QMessageBox::warning(this,"Failed to load stylesheet", "Failed to load stylesheet for MainWindow.");
     }
 
+/*      // Production DB credentials
+    QSettings settings(":/db_cred.ini", QSettings::IniFormat);
+    QString host = settings.value("prod_db/host").toString();
+    int port = settings.value("prod_db/port").toInt();
+    QString dbName = settings.value("prod_db/name").toString();
+    QString user = settings.value("prod_db/user").toString();
+    QString password = settings.value("prod_db/password").toString(); */
+    /*  //Laptop Test DB credentials
+    QSettings settings(":/db_cred.ini", QSettings::IniFormat);
+    QString host = settings.value("brit_test_db/host").toString();
+    int port = settings.value("brit_test_db/port").toInt();
+    QString dbName = settings.value("brit_test_db/name").toString();
+    QString user = settings.value("brit_test_db/user").toString();
+    QString password = settings.value("brit_test_db/password").toString(); */
+    
     //Test DB credentials
     QSettings settings(":/db_cred.ini", QSettings::IniFormat);
     QString host = settings.value("test_db/host").toString();
