@@ -39,15 +39,19 @@ set(SOURCES
     cpp/mainwindow.cpp
 
     cpp/addcustomer.cpp
+    cpp/customerpage.cpp
 
     cpp/producteditor.cpp
     cpp/addproductdetailswindow.cpp
+    cpp/productpage.cpp
 
     cpp/ordereditor.cpp
     cpp/addorderdetailwindow.cpp
+    cpp/orderpage.cpp
     
     cpp/expenseeditor.cpp
     cpp/addexpensedetailwindow.cpp
+    cpp/expensepage.cpp
 
     cpp/reportspage.cpp
     
@@ -58,15 +62,19 @@ set(HEADERS
     headers/mainwindow.h
 
     headers/addcustomer.h
+    headers/customerpage.h
 
     headers/producteditor.h
     headers/addproductdetailswindow.h
+    headers/productpage.h
 
     headers/ordereditor.h
     headers/addorderdetailwindow.h
+    headers/orderpage.h
 
     headers/expenseeditor.h
     headers/addexpensedetailwindow.h
+    headers/expensepage.h
 
     headers/reportspage.h
 
@@ -77,15 +85,19 @@ set(FORMS
     ui/mainwindow.ui
 
     ui/addcustomer.ui
+    ui/customerpage.ui
 
     ui/producteditor.ui
     ui/addproductdetailswindow.ui
+    ui/productpage.ui
 
     ui/ordereditor.ui
     ui/addorderdetailwindow.ui
+    ui/orderpage.ui
 
     ui/expenseeditor.ui
     ui/addexpensedetailwindow.ui
+    ui/expensepage.ui
 
     ui/reportspage.ui
  

@@ -47,7 +47,6 @@ QDialog#OrderEditor{
 }
 
 
-
 QDialog#ExpenseEditor{
     background-color: hsla(229, 19%, 22%, 1);
     color:hsla(52, 100%, 95%, 1);
@@ -64,8 +63,7 @@ QDialog#ProductDetailsWindow{
 }
 
 QPushButton {
-    background-color: hsla(319, 30%, 16%, .1);
-
+    background-color: hsla(319, 30%, 16%, 1);
     color: hsla(52, 100%, 95%, 1);
     border: 1px outset hsla(52, 100%, 95%, 1);
     border-radius: 4px;
