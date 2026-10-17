@@ -1,9 +1,9 @@
 // addExpenseDetailWindow.cpp
 #include "../headers/addExpenseDetailWindow.h"
-#include "../ui/ui_addexpensedetailwindow.h"  // From .ui
+#include "ui_addexpensedetailwindow.h"
 #include <QDate>
 #include <QMessageBox>
-#include <QDoubleValidator>  // For price/qty input
+#include <QDoubleValidator>
 #include <QIntValidator>
 
 AddExpenseDetailWindow::AddExpenseDetailWindow(QWidget *parent)

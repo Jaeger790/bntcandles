@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QSqlDatabase>
-#include <QSqlTableModel>  // Fixed: SQl → QSql
+#include <QSqlTableModel>
 
 namespace Ui {
 class OrderPage;
@@ -23,12 +23,12 @@ private slots:
     void deleteOrder();
 
 private:
-    Ui::OrderPage *ui;  // Added: Missing member
-    QSqlDatabase db;    // Added: Missing member
-    QSqlTableModel *orderModel;  // Added: Missing member
+    Ui::OrderPage *ui;
+    QSqlDatabase db;
+    QSqlTableModel *orderModel;
 
-    void setupOrderTable();  // Added: Missing declaration
-    void refreshTable();     // Added: Missing declaration
+    void setupOrderTable();
+    void refreshTable();
 };
 
 #endif // ORDERPAGE_H

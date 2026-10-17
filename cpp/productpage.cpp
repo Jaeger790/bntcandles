@@ -1,10 +1,10 @@
 #include "../headers/productpage.h"
-#include "../ui/ui_productpage.h"
+#include "ui_productpage.h"
 #include "../headers/producteditor.h"
 #include <QMessageBox>
 #include <QSqlQuery>
-#include <QSqlError>  // Added: For lastError().text()
-#include <algorithm>  // For std::sort
+#include <QSqlError>
+#include <algorithm>
 
 ProductPage::ProductPage(const QSqlDatabase &db, QWidget *parent)
     : QWidget(parent), ui(new Ui::ProductPage), db(db)

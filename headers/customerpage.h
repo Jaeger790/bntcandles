@@ -14,7 +14,7 @@ class CustomerPage : public QWidget
     Q_OBJECT
 
 public:
-    explicit CustomerPage(const QSqlDatabase &db, QWidget *parent = nullptr);  // Fixed: const for consistency
+    explicit CustomerPage(const QSqlDatabase &db, QWidget *parent = nullptr);
     ~CustomerPage();
 
 private slots:
@@ -28,7 +28,7 @@ private:
     QSqlTableModel *customerModel;
 
     void setupCustomerTable();
-    void refreshTable();  // Added: Missing decl
+    void refreshTable();
 };
 
 #endif // CUSTOMERPAGE_H
