@@ -47,13 +47,13 @@ set(SOURCES
     cpp/ordereditor.cpp
     cpp/addorderdetailwindow.cpp
     cpp/orderpage.cpp
-
+    
     cpp/expenseeditor.cpp
     cpp/addExpenseDetailWindow.cpp
     cpp/expensepage.cpp
 
     cpp/reportspage.cpp
-
+    
     cpp/CustomerModel.cpp
 )
 
@@ -99,24 +99,26 @@ set(FORMS
     ui/expensepage.ui
 
     ui/reportspage.ui
-
-
+ 
+    
 )
 
 set(RESOURCES
     assets/resources.qrc
-
+    
     assets/taxRates.txt
     assets/states
     assets/bnt_icon.jpg
 )
 
-add_executable(BNTCandles
-    ${SOURCES}
-    ${HEADERS}
-    ${FORMS}
-    ${RESOURCES}
+set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
+add_executable(BNTCandles 
+    ${SOURCES} 
+    ${HEADERS} 
+    ${FORMS} 
+    ${RESOURCES}
+    
 
 
 )
@@ -136,5 +138,4 @@ target_include_directories(BNTCandles PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
