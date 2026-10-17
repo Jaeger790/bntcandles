@@ -1,6 +1,6 @@
 // addExpenseDetailWindow.cpp
 #include "../headers/addExpenseDetailWindow.h"
-#include "ui_addexpensedetailwindow.h"
+#include "ui_addExpenseDetailWindow.h"
 #include <QDate>
 #include <QMessageBox>
 #include <QDoubleValidator>
