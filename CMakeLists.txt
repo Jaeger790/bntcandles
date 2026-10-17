@@ -4,7 +4,6 @@ project(BNTCandles LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_PREFIX_PATH "C:/Qt/6.9.2/mingw_64" CACHE PATH "Qt6 Library Path")
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -50,7 +49,7 @@ set(SOURCES
     cpp/orderpage.cpp
     
     cpp/expenseeditor.cpp
-    cpp/addexpensedetailwindow.cpp
+    cpp/addExpenseDetailWindow.cpp
     cpp/expensepage.cpp
 
     cpp/reportspage.cpp
@@ -73,7 +72,7 @@ set(HEADERS
     headers/orderpage.h
 
     headers/expenseeditor.h
-    headers/addexpensedetailwindow.h
+    headers/addExpenseDetailWindow.h
     headers/expensepage.h
 
     headers/reportspage.h
@@ -96,7 +95,7 @@ set(FORMS
     ui/orderpage.ui
 
     ui/expenseeditor.ui
-    ui/addexpensedetailwindow.ui
+    ui/addExpenseDetailWindow.ui
     ui/expensepage.ui
 
     ui/reportspage.ui
@@ -107,11 +106,12 @@ set(FORMS
 set(RESOURCES
     assets/resources.qrc
     
-    assets/db_cred.ini
     assets/taxRates.txt
     assets/states
     assets/bnt_icon.jpg
 )
+
+set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
 add_executable(BNTCandles 
     ${SOURCES} 
@@ -138,7 +138,4 @@ target_include_directories(BNTCandles PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
 
-# Debug UIC processing
-message(STATUS "UI files: ${FORMS}")
