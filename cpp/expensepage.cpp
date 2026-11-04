@@ -1,10 +1,10 @@
 #include "../headers/expensepage.h"
-#include "../ui/ui_expensepage.h"
+#include "ui_expensepage.h"
 #include "../headers/expenseeditor.h"
 #include <QMessageBox>
 #include <QSqlQuery>
-#include <QSqlError>  // Added: For lastError().text()
-#include <algorithm>  // For std::sort (for multi-delete)
+#include <QSqlError>
+#include <algorithm>
 
 ExpensePage::ExpensePage(const QSqlDatabase &db, QWidget *parent)
     : QWidget(parent), ui(new Ui::ExpensePage), db(db)

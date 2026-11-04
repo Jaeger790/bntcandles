@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QSqlDatabase>
-#include <QSqlQueryModel>  // Legacy—remove post-test
+#include <QSqlQueryModel>
 #include <QTextBrowser>
 #include <QVBoxLayout>
 #include <QChartView>

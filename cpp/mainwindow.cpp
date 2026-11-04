@@ -3,7 +3,7 @@
  * connects ui elements from main window, and establishes logic for page navigation.
  */
 #include "../headers/mainwindow.h"
-#include "../ui/ui_mainwindow.h"
+#include "ui_mainwindow.h"
 
 // Full page includes (Fixed: Provides complete types for new/insert/delete)
 #include "../headers/reportspage.h"
@@ -19,7 +19,9 @@
 #include <QFile>
 #include <QTextStream>
 #include <QSettings>
-#include <QIcon>  // For setWindowIcon
+#include <QStandardPaths>
+#include <QDir>
+#include <QIcon>
 
 BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcandles){
     ui->setupUi(this);
@@ -38,23 +40,18 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
         QMessageBox::warning(this,"Failed to load stylesheet", "Failed to load stylesheet for MainWindow.");
     }
 
-/*      // Production DB credentials
-    QSettings settings(":/db_cred.ini", QSettings::IniFormat);
-    QString host = settings.value("prod_db/host").toString();
-    int port = settings.value("prod_db/port").toInt();
-    QString dbName = settings.value("prod_db/name").toString();
-    QString user = settings.value("prod_db/user").toString();
-    QString password = settings.value("prod_db/password").toString(); */
-    /*  //Laptop Test DB credentials
-    QSettings settings(":/db_cred.ini", QSettings::IniFormat);
-    QString host = settings.value("brit_test_db/host").toString();
-    int port = settings.value("brit_test_db/port").toInt();
-    QString dbName = settings.value("brit_test_db/name").toString();
-    QString user = settings.value("brit_test_db/user").toString();
-    QString password = settings.value("brit_test_db/password").toString(); */
-    
-    //Test DB credentials
-    QSettings settings(":/db_cred.ini", QSettings::IniFormat);
+    // Keep database credentials outside the executable and source tree.
+    QString configPath = qEnvironmentVariable("BNT_DB_CONFIG");
+    if (configPath.isEmpty()) {
+        configPath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation))
+                         .filePath("db_cred.ini");
+    }
+    if (!QFile::exists(configPath)) {
+        QMessageBox::critical(this, "Database configuration", "Create a database config at " + configPath
+                              + " or set BNT_DB_CONFIG.");
+        return;
+    }
+    QSettings settings(configPath, QSettings::IniFormat);
     QString host = settings.value("test_db/host").toString();
     int port = settings.value("test_db/port").toInt();
     QString dbName = settings.value("test_db/name").toString();
@@ -68,7 +65,7 @@ BNTcandles::BNTcandles(QWidget *parent) : QMainWindow(parent), ui(new Ui::BNTcan
     db.setDatabaseName(dbName);
     db.setUserName(user);
     db.setPassword(password);
-    
+
     // Error message if connection fails
     if (!db.open()){
         QMessageBox::critical(this, "Database error", "Failed to connect: " + db.lastError().text());

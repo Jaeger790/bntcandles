@@ -1,12 +1,12 @@
 #include "../headers/orderpage.h"
-#include "../ui/ui_orderpage.h"
+#include "ui_orderpage.h"
 #include "../headers/ordereditor.h"
 #include <QMessageBox>
 #include <QSqlQuery>
-#include <QSqlError>  // Added: For lastError().text()
+#include <QSqlError>
 
 OrderPage::OrderPage(const QSqlDatabase &db, QWidget *parent)
-    : QWidget(parent), ui(new Ui::OrderPage), db(db)  // Fixed: Init list with members
+    : QWidget(parent), ui(new Ui::OrderPage), db(db)
 {
     ui->setupUi(this);
 
@@ -63,7 +63,7 @@ void OrderPage::setupOrderTable()
     ui->orderTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 }
 
-void OrderPage::refreshTable()  // Added: Full impl
+void OrderPage::refreshTable()
 {
     orderModel->select(); // Force refresh
     ui->orderTable->resizeColumnsToContents();

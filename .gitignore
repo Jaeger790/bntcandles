@@ -2,8 +2,6 @@
 
 # ----------------------------------------------------------------------------
 
-
-
 *~
 
 *.autosave
@@ -74,9 +72,6 @@ Thumbs.db
 
 /.vscode
 
-.gitignore
-
-
 # qtcreator generated files
 
 *.pro.user*
@@ -85,19 +80,13 @@ Thumbs.db
 
 CMakeLists.txt.user*
 
-
-
 # xemacs temporary files
 
 *.flc
 
-
-
 # Vim temporary files
 
 .*.swp
-
-
 
 # Visual Studio generated files
 
@@ -129,21 +118,15 @@ CMakeLists.txt.user*
 
 *.vscode
 
-
-
 # MinGW generated files
 
 *.Debug
 
 *.Release
 
-
-
 # Python byte code
 
 *.pyc
-
-
 
 # Binaries
 
@@ -152,8 +135,6 @@ CMakeLists.txt.user*
 *.dll
 
 *.exe
-
-
 
 # Directories with generated files
 
@@ -169,4 +150,7 @@ CMakeLists.txt.user*
 
 /build*/
 /out*/
+
+
+!assets/db_cred.example.ini
 

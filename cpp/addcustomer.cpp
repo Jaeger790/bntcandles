@@ -1,5 +1,5 @@
 #include "../headers/addcustomer.h"
-#include "../ui/ui_addcustomer.h"
+#include "ui_addcustomer.h"
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
@@ -120,3 +120,4 @@ void AddCustomerWindow::setZip(const QString &zip)
 void AddCustomerWindow::setCompany(const QString &company){
     ui->companyTextbox->setText(company);
 }
+

@@ -1,5 +1,5 @@
 #include "../headers/producteditor.h"
-#include "../ui/ui_producteditor.h"
+#include "ui_producteditor.h"
 #include "../headers/addproductdetailswindow.h"
 #include <QSqlQuery>
 #include <QSqlRecord>
@@ -143,7 +143,7 @@ void ProductEditor::saveChanges() {
     // Update stock_qty (if not using DB trigger)
     // updateTotalStock();
 
-    accept();  
+    accept();
 }
 
 

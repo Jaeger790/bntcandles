@@ -5,7 +5,7 @@
 #include <QSqlTableModel>
 #include <QSqlDatabase>
 #include <QSqlRecord>
-#include "../headers/addexpensedetailwindow.h"  // For param
+#include "../headers/addExpenseDetailWindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ExpenseEditor; }

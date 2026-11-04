@@ -1,5 +1,5 @@
 #include "../headers/reportspage.h"
-#include "../ui/ui_reportspage.h"
+#include "ui_reportspage.h"
 #include <QSqlQuery>
 #include <QString>
 #include <QSqlError>
@@ -9,7 +9,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QFont>
 #include <QVector>
-#include <QPainter>  
+#include <QPainter>
 
 ReportsPage::ReportsPage(const QSqlDatabase &db, QWidget *parent)
     : QWidget(parent), ui(new Ui::ReportsPage), db(db)
@@ -19,11 +19,11 @@ ReportsPage::ReportsPage(const QSqlDatabase &db, QWidget *parent)
     candlePlaceholder = ui->candleChartPlaceholder;
     customerPlaceholder = ui->customerChartPlaceholder;
 
-    // Legacy models 
+    // Legacy models
     customerSpendingModel = new QSqlQueryModel(this);
     candleSalesModel = new QSqlQueryModel(this);
 
-    // Init charts 
+    // Init charts
     candleSalesChartView = nullptr;
     customerSpendingChartView = nullptr;
 
@@ -32,9 +32,9 @@ ReportsPage::ReportsPage(const QSqlDatabase &db, QWidget *parent)
     candleLayout->setContentsMargins(0, 0, 0, 0);
     auto customerLayout = new QVBoxLayout(customerPlaceholder);
     customerLayout->setContentsMargins(0, 0, 0, 0);
-    
+
     setupDashboard();
-    refreshReports();  
+    refreshReports();
 }
 
 ReportsPage::~ReportsPage()
@@ -142,7 +142,7 @@ void ReportsPage::updateDashboard()
     // Total sold
     QSqlQuery soldQuery(db);
     int totalSold = 0;
-    soldQuery.exec("SELECT SUM(oi.qty) AS total_sold FROM order_items oi JOIN orders o ON oi.order_ID = o.order_ID WHERE o.status = 'Complete'"); 
+    soldQuery.exec("SELECT SUM(oi.qty) AS total_sold FROM order_items oi JOIN orders o ON oi.order_ID = o.order_ID WHERE o.status = 'Complete'");
     if (soldQuery.next()) totalSold = soldQuery.value("total_sold").toInt();
     // Update labels (access via ui->)
     ui->totalSoldLabel->setText(QString::number(totalSold));
@@ -167,7 +167,7 @@ void ReportsPage::setupCandleSalesChart()
     if (layout && candleSalesChartView) {
         layout->removeWidget(candleSalesChartView);
     }
-    // Fetch all data upfront 
+    // Fetch all data upfront
     while (candleSalesModel->canFetchMore()) {
         candleSalesModel->fetchMore();
     }
@@ -205,7 +205,7 @@ void ReportsPage::setupCandleSalesChart()
         chart->setPlotAreaBackgroundBrush(QBrush(QColor(218, 33, 106,25)));
 
         set->setColor(QColor(52,15,100,255));
-        
+
 
         QBarCategoryAxis *axisX = new QBarCategoryAxis();
         // Bulk append categories
@@ -318,7 +318,7 @@ void ReportsPage::setupCustomerSpendingChart()
         customerSpendingChartView->setMinimumSize(400,600);
         axisX->setLabelsAngle(-45);
         layout->addWidget(customerSpendingChartView);
-   
+
     } else {
         auto label = new QLabel("No customer spending data available.", this);
         label->setAlignment(Qt::AlignCenter);

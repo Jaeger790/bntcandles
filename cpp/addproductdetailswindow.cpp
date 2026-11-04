@@ -1,5 +1,5 @@
 #include "../headers/addproductdetailswindow.h"
-#include "../ui/ui_addproductdetailswindow.h"
+#include "ui_addproductdetailswindow.h"
 #include <QDoubleValidator>
 #include <QIntValidator>
 
@@ -48,3 +48,4 @@ void AddProductDetailsWindow::setTaxRate(double taxRate) {
 void AddProductDetailsWindow::setStockQuantity(int stockQty) {
     ui->stockQtyEdit->setValue(stockQty);
 }
+

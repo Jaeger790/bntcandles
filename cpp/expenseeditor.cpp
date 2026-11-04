@@ -1,7 +1,7 @@
 // expenseeditor.cpp
 #include "../headers/expenseeditor.h"
-#include "../ui/ui_expenseeditor.h"
-#include "../headers/addexpensedetailwindow.h"
+#include "ui_expenseeditor.h"
+#include "../headers/addExpenseDetailWindow.h"
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlError>

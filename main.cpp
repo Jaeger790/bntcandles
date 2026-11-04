@@ -4,7 +4,7 @@
  *
 */
 
-#include "../headers/mainwindow.h"
+#include "headers/mainwindow.h"
 #include <QFile>
 #include <QTextStream>
 #include <QApplication>
@@ -30,3 +30,4 @@ int main(int argc, char *argv[])
     window.show();
     return a.exec();
 }
+

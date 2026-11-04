@@ -1,5 +1,5 @@
 #include "../headers/addorderdetailwindow.h"
-#include "../ui/ui_addorderdetailwindow.h"
+#include "ui_addorderdetailwindow.h"
 #include <QIntValidator>
 #include <QDoubleValidator>
 #include <QSqlQuery>
@@ -88,7 +88,7 @@ void AddOrderDetailWindow::loadHTML(){
         </head>
         <html>
             <body>
-                
+
                 <h2>Product</h2>
                     <p>%6</p>
                 <h2>Quantity</h2>
@@ -103,7 +103,7 @@ void AddOrderDetailWindow::loadHTML(){
                     <p>$%4</p>
                 <h2>Total</h2>
                     <p>$%5</p>
-                
+
             </body>
         </html>
     )";
@@ -119,7 +119,7 @@ void AddOrderDetailWindow::loadHTML(){
                 .arg(qty);
 
     ui->textBrowser->setHtml(html);
-} 
+}
 
 int AddOrderDetailWindow::detailId() const
 {

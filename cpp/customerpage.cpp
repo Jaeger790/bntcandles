@@ -1,10 +1,10 @@
 #include "../headers/customerpage.h"
-#include "../ui/ui_customerpage.h"
-#include "../headers/addcustomer.h"  // Fixed: incldue → include
+#include "ui_customerpage.h"
+#include "../headers/addcustomer.h"
 #include <QMessageBox>
 #include <QSqlRecord>
-#include <QSqlError>  // Added: For lastError().text()
-#include <QSortFilterProxyModel>  // Optional: for future filtering
+#include <QSqlError>
+#include <QSortFilterProxyModel>
 
 CustomerPage::CustomerPage(const QSqlDatabase &db, QWidget *parent)
     : QWidget(parent), ui(new Ui::CustomerPage), db(db)
@@ -47,14 +47,14 @@ void CustomerPage::setupCustomerTable()
     ui->customerTable->setModel(customerModel);
     ui->customerTable->setColumnHidden(0, true); // Hide customer_id
     ui->customerTable->resizeColumnsToContents();
-    ui->customerTable->horizontalHeader()->setStretchLastSection(false);  // Fixed: ui-. → ui->
+    ui->customerTable->horizontalHeader()->setStretchLastSection(false);
     ui->customerTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->customerTable->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->customerTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->customerTable->viewport()->update();
 }
 
-void CustomerPage::refreshTable()  // Added: Full impl (was missing?)
+void CustomerPage::refreshTable()
 {
     customerModel->select(); // Force refresh
     ui->customerTable->resizeColumnsToContents();
